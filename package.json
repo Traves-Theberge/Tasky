@@ -1,0 +1,127 @@
+{
+  "name": "tasky",
+  "version": "1.0.0",
+  "description": "A Windows tray application for recurring workday reminders with animated assistant",
+  "main": ".vite/build/main.js",
+  "homepage": "./",
+  "scripts": {
+    "start": "npx electron-forge start",
+    "package": "npx electron-forge package",
+    "make": "npx electron-forge make",
+    "publish": "npx electron-forge publish",
+    "lint": "eslint --ext .ts,.tsx .",
+    "dev": "npx electron-forge start",
+    "electron": "electron src/main.js",
+    "build-renderer": "vite build --config vite.renderer.config.js"
+  },
+  "keywords": [
+    "electron",
+    "reminder",
+    "tray",
+    "assistant",
+    "notifications"
+  ],
+  "author": "Tasky Team",
+  "license": "MIT",
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "asar": true,
+        "icon": "./src/assets/icon",
+        "executableName": "Tasky",
+        "appBundleId": "com.tasky.reminderapp",
+        "appCategoryType": "public.app-category.productivity",
+        "win32metadata": {
+          "CompanyName": "Tasky Team",
+          "FileDescription": "Tasky - Your Reminder Assistant",
+          "OriginalFilename": "Tasky.exe",
+          "ProductName": "Tasky",
+          "InternalName": "Tasky"
+        }
+      },
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "tasky",
+            "authors": "Tasky Team",
+            "description": "Your friendly reminder assistant with Clippy-style helper",
+            "setupIcon": "./src/assets/setup-icon.ico",
+            "iconUrl": "https://github.com/tasky/tasky/raw/main/assets/icon.ico",
+            "setupExe": "TaskySetup.exe",
+            "noMsi": true
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ],
+      "plugins": [
+        {
+          "name": "@electron-forge/plugin-vite",
+          "config": {
+            "build": [
+              {
+                "entry": "src/main.js",
+                "config": "vite.main.config.js"
+              },
+              {
+                "entry": "src/preload.js",
+                "config": "vite.preload.config.js"
+              }
+            ],
+            "renderer": [
+              {
+                "name": "main_window",
+                "config": "vite.renderer.config.js"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.8.1",
+    "@electron-forge/maker-deb": "^7.4.0",
+    "@electron-forge/maker-rpm": "^7.4.0",
+    "@electron-forge/maker-squirrel": "^7.4.0",
+    "@electron-forge/maker-zip": "^7.4.0",
+    "@electron-forge/plugin-vite": "^7.8.1",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^9.2.0",
+    "electron": "29.1.1",
+    "eslint": "^8.0.1",
+    "glob": "^11.0.3",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.11",
+    "vite": "^5.0.12",
+    "wait-on": "^8.0.4"
+  },
+  "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "clippyjs": "^0.0.3",
+    "clsx": "^2.1.1",
+    "electron-squirrel-startup": "^1.0.1",
+    "electron-store": "^8.1.0",
+    "framer-motion": "^12.23.11",
+    "lucide-react": "^0.533.0",
+    "node-cron": "^3.0.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "sound-play": "^1.1.0",
+    "tailwind-merge": "^3.3.1"
+  }
+}

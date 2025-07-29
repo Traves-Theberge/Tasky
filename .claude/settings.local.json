@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-electron-app:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm install:*)",
+      "Bash(npx:*)",
+      "Bash(mv:*)"
+    ],
+    "deny": []
+  }
+}
