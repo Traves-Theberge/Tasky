@@ -119,7 +119,7 @@ const App = () => {
     <div className={`flex h-screen antialiased ${settings.darkMode ? 'dark' : ''}`}>
       <div className="flex w-full overflow-hidden bg-background text-foreground">
         {/* Sidebar */}
-        <div className="flex flex-col w-64 bg-card border-r border-border">
+        <div className="flex flex-col w-64 bg-card border-r border-border sidebar">
           <div className="flex items-center justify-between h-16 px-6 border-b border-border bg-gradient-to-r from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-primary-foreground">
@@ -142,9 +142,9 @@ const App = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`group flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  className={`group flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 nav-btn ${
                     activeTab === tab.id
-                      ? 'bg-primary text-primary-foreground shadow-md'
+                      ? 'bg-primary text-primary-foreground shadow-md active'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                   }`}
                 >
@@ -250,7 +250,7 @@ const RemindersTab = ({ reminders, onAddReminder, onRemoveReminder, onEditRemind
         </div>
       </div>
       
-      <Card className="bg-gradient-to-br from-card to-muted/20 border-border/50 shadow-elegant">
+      <Card className="bg-gradient-to-br from-card to-muted/20 border-border/50 shadow-elegant card">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg font-semibold text-card-foreground">
             <Plus size={18} className="text-gray-600 dark:text-gray-400" />
@@ -267,7 +267,7 @@ const RemindersTab = ({ reminders, onAddReminder, onRemoveReminder, onEditRemind
         </CardContent>
       </Card>
 
-      <Card className="bg-card border-border/50 shadow-elegant flex-1">
+      <Card className="bg-card border-border/50 shadow-elegant flex-1 card">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg font-semibold text-card-foreground">
             <Calendar size={18} className="text-gray-600 dark:text-gray-400" />
@@ -400,7 +400,7 @@ const SettingsTab = ({ settings, onSettingChange, onTestNotification }) => {
       
       <div className="pt-4 border-t border-border">
         <Button 
-          className="w-full bg-gradient-to-r from-gray-900 to-black dark:from-white dark:to-gray-100 hover:from-black hover:to-gray-800 dark:hover:from-gray-100 dark:hover:to-white text-white dark:text-black shadow-sleek hover:shadow-lg transition-all duration-200"
+          className="w-full bg-gradient-to-r from-gray-900 to-black dark:from-white dark:to-gray-100 hover:from-black hover:to-gray-800 dark:hover:from-gray-100 dark:hover:to-white text-white dark:text-black shadow-sleek hover:shadow-lg transition-all duration-200 btn-primary"
           onClick={onTestNotification}
         >
           <Bell size={16} className="mr-2" />
@@ -436,7 +436,7 @@ const AvatarTab = ({ selectedAvatar, onAvatarChange }) => {
         </div>
       </div>
       
-      <Card className="bg-gradient-to-br from-card to-muted/20 border-border/50 shadow-elegant">
+      <Card className="bg-gradient-to-br from-card to-muted/20 border-border/50 shadow-elegant card">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg font-semibold text-card-foreground">
             <Smile size={18} className="text-gray-600 dark:text-gray-400" />
@@ -616,7 +616,7 @@ const ReminderForm = ({ onAddReminder, onEditReminder, editingReminder, onCancel
           onChange={(e) => setMessage(e.target.value)}
           placeholder="e.g., Time to stand up and stretch!"
           maxLength={100}
-          className="bg-background border-border focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+          className="bg-background border-border focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 input"
         />
         <div className="text-xs text-muted-foreground text-right">
           {message.length}/100 characters
@@ -633,7 +633,7 @@ const ReminderForm = ({ onAddReminder, onEditReminder, editingReminder, onCancel
           type="time"
           value={time}
           onChange={(e) => setTime(e.target.value)}
-          className="bg-background border-border focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200"
+          className="bg-background border-border focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 input"
         />
       </div>
 
@@ -664,7 +664,7 @@ const ReminderForm = ({ onAddReminder, onEditReminder, editingReminder, onCancel
 
       <Button 
         type="submit" 
-        className="w-full bg-gradient-to-r from-gray-900 to-black dark:from-white dark:to-gray-100 hover:from-black hover:to-gray-800 dark:hover:from-gray-100 dark:hover:to-white text-white dark:text-black shadow-sleek hover:shadow-lg transition-all duration-200"
+        className="w-full bg-gradient-to-r from-gray-900 to-black dark:from-white dark:to-gray-100 hover:from-black hover:to-gray-800 dark:hover:from-gray-100 dark:hover:to-white text-white dark:text-black shadow-sleek hover:shadow-lg transition-all duration-200 btn-primary"
       >
         <Plus size={16} className="mr-2" />
         {editingReminder ? "Update Reminder" : "Add Reminder"}
