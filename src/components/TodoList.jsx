@@ -33,7 +33,7 @@ export default function TodoList() {
 <form className="todo-add-form" onSubmit={addTodo}>
   <Input
     value={input}
-    onChange={e => setInput(e.target.value)}
+  onChange={e => setInput(e.target.value)}
     placeholder="Add a new task..."
     className="flex-1"
   />

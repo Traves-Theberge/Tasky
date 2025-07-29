@@ -24,7 +24,8 @@ export default defineConfig({
         'sound-play',
         'child_process',
         'path',
-        'fs'
+        'fs',
+        /^\.\/electron\//
       ],
     },
     emptyOutDir: false,

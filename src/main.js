@@ -1,8 +1,8 @@
 const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } = require('electron');
 const path = require('path');
-const ReminderScheduler = require('./electron/scheduler');
-const TaskyStore = require('./electron/storage');
-const ClippyAssistant = require('./electron/assistant');
+const ReminderScheduler = require(path.join(process.cwd(), 'src', 'electron', 'scheduler'));
+const TaskyStore = require(path.join(process.cwd(), 'src', 'electron', 'storage'));
+const ClippyAssistant = require(path.join(process.cwd(), 'src', 'electron', 'assistant'));
 // const CustomNotificationWindow = require('./electron/customNotification'); // Removed - Clippy handles all notifications
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.

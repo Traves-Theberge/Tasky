@@ -3,14 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 export const SettingSection = ({ title, icon, children }) => {
   return (
-    <Card className="mb-4">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold flex items-center gap-3">
-          <span className="text-xl">{icon}</span>
+    <Card className="mb-6 bg-gradient-to-br from-card to-muted/20 border-border/50 shadow-elegant">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-lg font-semibold flex items-center gap-3 text-card-foreground">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-800">
+            <span className="text-lg">{icon}</span>
+          </div>
           {title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-1">
+      <CardContent className="space-y-2">
         {children}
       </CardContent>
     </Card>
