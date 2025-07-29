@@ -14,7 +14,7 @@ export const SettingItem = ({
   return (
     <div className="flex items-center justify-between py-4 px-2 rounded-lg hover:bg-muted/30 transition-colors duration-200">
       <div className="flex items-center space-y-0 gap-4">
-        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex-shrink-0">
+        <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-primary/10 flex-shrink-0">
           <span className="text-lg">{icon}</span>
         </div>
         <div className="flex flex-col">

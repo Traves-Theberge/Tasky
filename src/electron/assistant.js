@@ -94,7 +94,7 @@ class ClippyAssistant {
             
             .notification-bubble {
               position: absolute;
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              background: #7f7f7c;
               color: white;
               padding: 12px 16px;
               border-radius: 20px;
@@ -136,7 +136,7 @@ class ClippyAssistant {
               transform: translateY(-50%);
               width: 0;
               height: 0;
-              border-left: 10px solid #667eea;
+              border-left: 10px solid #7f7f7c;
               border-top: 10px solid transparent;
               border-bottom: 10px solid transparent;
             }
@@ -158,7 +158,7 @@ class ClippyAssistant {
               transform: translateY(-50%);
               width: 0;
               height: 0;
-              border-right: 10px solid #667eea;
+              border-right: 10px solid #7f7f7c;
               border-top: 10px solid transparent;
               border-bottom: 10px solid transparent;
             }

@@ -54,7 +54,7 @@ class CustomNotificationWindow {
             }
             
             .notification {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              background: #7f7f7c;
               border-radius: 12px;
               padding: 20px;
               box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);

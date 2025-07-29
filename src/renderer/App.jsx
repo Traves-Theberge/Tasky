@@ -116,45 +116,33 @@ const App = () => {
   ];
 
   return (
-    <div className={`flex h-screen antialiased ${settings.darkMode ? 'dark' : ''}`}>
-      <div className="flex w-full overflow-hidden bg-background text-foreground">
-        {/* Sidebar */}
-        <div className="flex flex-col w-64 bg-card border-r border-border sidebar">
-          <div className="flex items-center justify-between h-16 px-6 border-b border-border bg-gradient-to-r from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+    <div className={`flex flex-col h-screen font-sans antialiased ${settings.darkMode ? 'dark' : ''}`}>
+      <div className="flex flex-col w-full overflow-hidden bg-background text-foreground">
+        {/* Header with Tabs */}
+        <header className="flex-shrink-0 bg-card border-b border-border header shadow-lg">
+          <div className="flex items-center justify-between h-16 px-6">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-primary-foreground">
-                📋
-              </div>
-              <h1 className="text-lg font-bold text-foreground">Tasky</h1>
             </div>
-            <button
-              onClick={handleCloseApp}
-              className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-muted transition-colors"
-              title="Close Tasky"
-            >
-              <X size={16} className="text-muted-foreground" />
-            </button>
-          </div>
-          
-          <div className="flex-1 p-4">
-            <nav className="space-y-1">
+            
+            {/* Top Navigation Tabs */}
+            <nav className="flex items-center gap-2 top-nav">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`group flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 nav-btn ${
+                  className={`group flex items-center px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 top-nav-btn ${
                     activeTab === tab.id
-                      ? 'bg-primary text-primary-foreground shadow-md active'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                      ? 'bg-primary text-primary-foreground shadow-lg scale-105 active'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary/30 hover:scale-102'
                   }`}
                 >
-                  <tab.icon size={18} className={`mr-3 transition-transform duration-200 ${
+                  <tab.icon size={16} className={`mr-2 transition-transform duration-200 ${
                     activeTab === tab.id ? 'scale-110' : 'group-hover:scale-105'
                   }`} />
                   <span className="font-medium">{tab.label}</span>
                   {activeTab === tab.id && (
                     <motion.div
-                      className="ml-auto w-1.5 h-1.5 rounded-full bg-primary-foreground"
+                      className="ml-2 w-1 h-1 rounded-full bg-primary-foreground"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ duration: 0.2 }}
@@ -163,18 +151,20 @@ const App = () => {
                 </button>
               ))}
             </nav>
+
+            <button
+              onClick={handleCloseApp}
+              className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-destructive/20 hover:text-destructive transition-all duration-200 hover:scale-105"
+              title="Close Tasky"
+            >
+              <X size={16} className="text-muted-foreground" />
+            </button>
           </div>
-          
-          <div className="p-4 border-t border-border bg-muted/30">
-            <div className="text-xs text-muted-foreground text-center">
-              Your productive companion
-            </div>
-          </div>
-        </div>
+        </header>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto bg-background">
-          <div className="h-full p-6">
+        <main className="flex-1 overflow-y-auto bg-background" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+          <div className="h-full p-8 pb-10">
             <AnimatePresence mode="wait">
               {activeTab === 'reminders' && (
                 <motion.div
@@ -239,25 +229,18 @@ const RemindersTab = ({ reminders, onAddReminder, onRemoveReminder, onEditRemind
   const [editingReminder, setEditingReminder] = useState(null);
 
   return (
-    <div className="space-y-6 h-full">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-gray-900 to-black dark:from-white dark:to-gray-100 text-white dark:text-black shadow-sleek">
-          <Bell size={20} />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Reminders</h2>
-          <p className="text-sm text-muted-foreground">Manage your daily notifications</p>
-        </div>
-      </div>
+    <div className="space-y-8 h-full">
       
-      <Card className="bg-gradient-to-br from-card to-muted/20 border-border/50 shadow-elegant card">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-card-foreground">
-            <Plus size={18} className="text-gray-600 dark:text-gray-400" />
+      <Card className="bg-card border-border/30 shadow-2xl rounded-3xl card backdrop-blur-sm">
+        <CardHeader className="pb-6">
+          <CardTitle className="flex items-center gap-3 text-xl font-bold text-card-foreground">
+            <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-primary/10">
+              <Plus size={20} className="text-card-foreground" />
+            </div>
             Add New Reminder
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="text-card-foreground">
           <ReminderForm 
             onAddReminder={onAddReminder}
             onEditReminder={onEditReminder}
@@ -267,49 +250,53 @@ const RemindersTab = ({ reminders, onAddReminder, onRemoveReminder, onEditRemind
         </CardContent>
       </Card>
 
-      <Card className="bg-card border-border/50 shadow-elegant flex-1 card">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-card-foreground">
-            <Calendar size={18} className="text-gray-600 dark:text-gray-400" />
-            Your Reminders
-            {reminders.length > 0 && (
-              <span className="ml-auto text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full font-medium">
-                {reminders.length} active
-              </span>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {reminders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
-                <Bell size={24} className="text-muted-foreground" />
+      <div className="pb-6">
+        <Card className="bg-card border-border/30 shadow-2xl flex-1 card rounded-3xl backdrop-blur-sm">
+          <CardHeader className="pb-6">
+            <CardTitle className="flex items-center gap-3 text-xl font-bold text-card-foreground">
+              <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-primary/10">
+                <Calendar size={20} className="text-card-foreground" />
               </div>
-              <h3 className="font-medium text-foreground mb-2">No reminders yet</h3>
-              <p className="text-sm text-muted-foreground max-w-sm">
-                Create your first reminder above to get started with your productivity journey!
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-thin">
-              {reminders.map((reminder, index) => (
-                <motion.div
-                  key={reminder.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <ReminderItem
-                    reminder={reminder}
-                    onRemove={() => onRemoveReminder(reminder.id)}
-                    onEdit={() => setEditingReminder(reminder)}
-                  />
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              Your Reminders
+              {reminders.length > 0 && (
+                <span className="ml-auto text-xs px-3 py-1.5 bg-secondary/20 text-secondary-foreground rounded-2xl font-semibold">
+                  {reminders.length} active
+                </span>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {reminders.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                  <Bell size={24} className="text-muted-foreground" />
+                </div>
+                <h3 className="font-medium text-foreground mb-2">No reminders yet</h3>
+                <p className="text-sm text-muted-foreground max-w-sm">
+                  Create your first reminder above to get started with your productivity journey!
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-96 overflow-y-auto" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+                {reminders.map((reminder, index) => (
+                  <motion.div
+                    key={reminder.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <ReminderItem
+                      reminder={reminder}
+                      onRemove={() => onRemoveReminder(reminder.id)}
+                      onEdit={() => setEditingReminder(reminder)}
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
@@ -317,95 +304,97 @@ const RemindersTab = ({ reminders, onAddReminder, onRemoveReminder, onEditRemind
 // Settings Tab Component
 const SettingsTab = ({ settings, onSettingChange, onTestNotification }) => {
   return (
-    <div className="space-y-6 h-full">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 dark:from-gray-200 dark:to-white text-white dark:text-black shadow-sleek">
-          <Settings size={20} />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Settings</h2>
-          <p className="text-sm text-muted-foreground">Customize your Tasky experience</p>
-        </div>
-      </div>
+    <div className="space-y-8 h-full">
+      <div className="space-y-8">
+        <Card className="bg-card border-border/30 shadow-2xl card rounded-3xl backdrop-blur-sm">
+          <CardHeader className="pb-6">
+            <CardTitle className="flex items-center gap-3 text-xl font-bold text-card-foreground">
+              <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-primary/10">
+                <Settings size={20} className="text-card-foreground" />
+              </div>
+              Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <SettingSection title="Notifications & Alerts" icon="🔔">
+              <SettingItem
+                icon="🔔"
+                title="Enable Notifications"
+                description="Receive desktop notifications for your reminders"
+                type="switch"
+                value={settings.enableNotifications}
+                onChange={(checked) => onSettingChange('enableNotifications', checked)}
+              />
+              <SettingItem
+                icon="🔊"
+                title="Sound Alerts"
+                description="Play notification sounds when reminders trigger"
+                type="switch"
+                value={settings.enableSound}
+                onChange={(checked) => onSettingChange('enableSound', checked)}
+              />
+              <SettingItem
+                icon="💬"
+                title="Notification Position"
+                type="select"
+                value={settings.notificationType}
+                onChange={(value) => onSettingChange('notificationType', value)}
+                options={[
+                  { value: 'custom', label: '⬅️ Left Side' },
+                  { value: 'native', label: '➡️ Right Side' }
+                ]}
+              />
+            </SettingSection>
 
-      <div className="space-y-4">
-        <SettingSection title="Notifications & Alerts" icon="🔔">
-          <SettingItem
-            icon="🔔"
-            title="Enable Notifications"
-            description="Receive desktop notifications for your reminders"
-            type="switch"
-            value={settings.enableNotifications}
-            onChange={(checked) => onSettingChange('enableNotifications', checked)}
-          />
-          <SettingItem
-            icon="🔊"
-            title="Sound Alerts"
-            description="Play notification sounds when reminders trigger"
-            type="switch"
-            value={settings.enableSound}
-            onChange={(checked) => onSettingChange('enableSound', checked)}
-          />
-          <SettingItem
-            icon="💬"
-            title="Notification Position"
-            type="select"
-            value={settings.notificationType}
-            onChange={(value) => onSettingChange('notificationType', value)}
-            options={[
-              { value: 'custom', label: '⬅️ Left Side' },
-              { value: 'native', label: '➡️ Right Side' }
-            ]}
-          />
-        </SettingSection>
+            <SettingSection title="Desktop Assistant" icon="🤖">
+              <SettingItem
+                icon="🤖"
+                title="Desktop Companion"
+                description="Show your assistant on the desktop for notifications"
+                type="switch"
+                value={settings.enableAssistant}
+                onChange={(checked) => onSettingChange('enableAssistant', checked)}
+              />
+              <SettingItem
+                icon="✨"
+                title="Assistant Animations"
+                description="Enable bouncing and hover animations for your companion"
+                type="switch"
+                value={settings.enableAnimation}
+                onChange={(checked) => onSettingChange('enableAnimation', checked)}
+              />
+            </SettingSection>
 
-        <SettingSection title="Desktop Assistant" icon="🤖">
-          <SettingItem
-            icon="🤖"
-            title="Desktop Companion"
-            description="Show your assistant on the desktop for notifications"
-            type="switch"
-            value={settings.enableAssistant}
-            onChange={(checked) => onSettingChange('enableAssistant', checked)}
-          />
-          <SettingItem
-            icon="✨"
-            title="Assistant Animations"
-            description="Enable bouncing and hover animations for your companion"
-            type="switch"
-            value={settings.enableAnimation}
-            onChange={(checked) => onSettingChange('enableAnimation', checked)}
-          />
-        </SettingSection>
-
-        <SettingSection title="System & Appearance" icon="⚙️">
-          <SettingItem
-            icon="⚡"
-            title="Auto Start"
-            description="Launch Tasky automatically when Windows starts"
-            type="switch"
-            value={settings.autoStart}
-            onChange={(checked) => onSettingChange('autoStart', checked)}
-          />
-          <SettingItem
-            icon="🌙"
-            title="Dark Mode"
-            description="Switch to a dark color scheme for better visibility"
-            type="switch"
-            value={settings.darkMode}
-            onChange={(checked) => onSettingChange('darkMode', checked)}
-          />
-        </SettingSection>
-      </div>
-      
-      <div className="pt-4 border-t border-border">
-        <Button 
-          className="w-full bg-gradient-to-r from-gray-900 to-black dark:from-white dark:to-gray-100 hover:from-black hover:to-gray-800 dark:hover:from-gray-100 dark:hover:to-white text-white dark:text-black shadow-sleek hover:shadow-lg transition-all duration-200 btn-primary"
-          onClick={onTestNotification}
-        >
-          <Bell size={16} className="mr-2" />
-          Test Notification
-        </Button>
+            <SettingSection title="System & Appearance" icon="⚙️">
+              <SettingItem
+                icon="⚡"
+                title="Auto Start"
+                description="Launch Tasky automatically when Windows starts"
+                type="switch"
+                value={settings.autoStart}
+                onChange={(checked) => onSettingChange('autoStart', checked)}
+              />
+              <SettingItem
+                icon="🌙"
+                title="Dark Mode"
+                description="Switch to a dark color scheme for better visibility"
+                type="switch"
+                value={settings.darkMode}
+                onChange={(checked) => onSettingChange('darkMode', checked)}
+              />
+            </SettingSection>
+            
+            <div className="pt-6 border-t border-border/30">
+              <Button 
+                className="w-full bg-card hover:bg-secondary/90 text-card-foreground shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] rounded-2xl py-3 font-semibold"
+                onClick={onTestNotification}
+              >
+                <Bell size={18} className="mr-3" />
+                Test Notification
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
@@ -425,29 +414,22 @@ const AvatarTab = ({ selectedAvatar, onAvatarChange }) => {
   ];
 
   return (
-    <div className="space-y-6 h-full">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-gray-700 to-gray-800 dark:from-gray-300 dark:to-gray-100 text-white dark:text-black shadow-sleek">
-          <Smile size={20} />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Choose Your Assistant</h2>
-          <p className="text-sm text-muted-foreground">Pick your perfect productivity companion</p>
-        </div>
-      </div>
+    <div className="space-y-8 h-full">
       
-      <Card className="bg-gradient-to-br from-card to-muted/20 border-border/50 shadow-elegant card">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg font-semibold text-card-foreground">
-            <Smile size={18} className="text-gray-600 dark:text-gray-400" />
+      <Card className="bg-card border-border/30 shadow-2xl card rounded-3xl backdrop-blur-sm">
+        <CardHeader className="pb-6">
+          <CardTitle className="flex items-center gap-3 text-xl font-bold text-card-foreground">
+            <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-primary/10">
+              <Smile size={20} className="text-card-foreground" />
+            </div>
             Available Assistants
-            <span className="ml-auto text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full font-medium">
+            <span className="ml-auto text-xs px-3 py-1.5 bg-secondary/20 text-secondary-foreground rounded-2xl font-semibold">
               {avatars.length} companions
             </span>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-6">
             {avatars.map((avatar, index) => (
               <motion.div
                 key={avatar.name}
@@ -456,36 +438,35 @@ const AvatarTab = ({ selectedAvatar, onAvatarChange }) => {
                 transition={{ delay: index * 0.05 }}
               >
                 <Card 
-                  className={`group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 relative overflow-hidden ${
+                  className={`group cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:scale-105 relative overflow-hidden rounded-2xl ${
                     selectedAvatar === avatar.name 
-                      ? 'ring-2 ring-gray-400 dark:ring-gray-600 bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600' 
-                      : 'bg-card hover:bg-muted/30 border-border/50'
+                      ? 'ring-3 ring-primary/50 bg-primary/5 border-primary/30 shadow-xl' 
+                      : 'bg-card hover:bg-secondary/10 border-border/30 shadow-lg'
                   }`}
                   onClick={() => onAvatarChange(avatar.name)}
                 >
-                  <CardContent className="flex flex-col items-center text-center p-6 relative">
-                    <div className={`text-4xl mb-3 transition-transform duration-300 ${
+                  <CardContent className="flex flex-col items-center text-center p-6 relative h-32">
+                    <div className={`relative text-4xl mb-3 transition-transform duration-300 ${
                       selectedAvatar === avatar.name ? 'scale-110' : 'group-hover:scale-105 group-hover:animate-bounce-subtle'
                     }`}>
                       {avatar.label.split(' ')[0]}
+                      {selectedAvatar === avatar.name && (
+                        <motion.div 
+                          className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-xs font-bold shadow-lg"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: "spring", duration: 0.3 }}
+                        >
+                          ✓
+                        </motion.div>
+                      )}
                     </div>
                     <div className="font-medium text-base mb-1 text-foreground">
                       {avatar.label.split(' ').slice(1).join(' ')}
                     </div>
-                    <div className="text-xs text-muted-foreground leading-relaxed">
+                    <div className="text-xs text-muted-foreground leading-relaxed flex-1 flex items-center">
                       {avatar.description}
                     </div>
-                    
-                    {selectedAvatar === avatar.name && (
-                      <motion.div 
-                        className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-br from-gray-800 to-black dark:from-white dark:to-gray-200 rounded-full flex items-center justify-center text-white dark:text-black text-xs font-bold shadow-sleek"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: "spring", duration: 0.3 }}
-                      >
-                        ✓
-                      </motion.div>
-                    )}
                     
                     {selectedAvatar === avatar.name && (
                       <motion.div
@@ -595,9 +576,7 @@ const ReminderForm = ({ onAddReminder, onEditReminder, editingReminder, onCancel
           <Button 
             type="button" 
             onClick={onCancelEdit} 
-            variant="destructive" 
-            size="sm"
-            className="hover:bg-destructive/90"
+            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] rounded-2xl py-2 px-4 font-semibold"
           >
             Cancel
           </Button>
@@ -605,7 +584,7 @@ const ReminderForm = ({ onAddReminder, onEditReminder, editingReminder, onCancel
       )}
       
       <div className="space-y-3">
-        <Label htmlFor="message" className="text-sm font-medium text-foreground flex items-center gap-2">
+        <Label htmlFor="message" className="text-sm font-medium text-card-foreground flex items-center gap-2">
           <span className="text-lg">💬</span>
           Reminder message
         </Label>
@@ -616,7 +595,7 @@ const ReminderForm = ({ onAddReminder, onEditReminder, editingReminder, onCancel
           onChange={(e) => setMessage(e.target.value)}
           placeholder="e.g., Time to stand up and stretch!"
           maxLength={100}
-          className="bg-background border-border focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 input"
+          className="bg-background border-border/30 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 input rounded-xl py-3 text-base"
         />
         <div className="text-xs text-muted-foreground text-right">
           {message.length}/100 characters
@@ -624,7 +603,7 @@ const ReminderForm = ({ onAddReminder, onEditReminder, editingReminder, onCancel
       </div>
 
       <div className="space-y-3">
-        <Label htmlFor="time" className="text-sm font-medium text-foreground flex items-center gap-2">
+        <Label htmlFor="time" className="text-sm font-medium text-card-foreground flex items-center gap-2">
           <Clock size={16} />
           Time
         </Label>
@@ -633,27 +612,27 @@ const ReminderForm = ({ onAddReminder, onEditReminder, editingReminder, onCancel
           type="time"
           value={time}
           onChange={(e) => setTime(e.target.value)}
-          className="bg-background border-border focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 input"
+          className="bg-background border-border/30 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 input rounded-xl py-3 text-base"
         />
       </div>
 
       <div className="space-y-3">
-        <Label className="text-sm font-medium text-foreground flex items-center gap-2">
+        <Label className="text-sm font-medium text-card-foreground flex items-center gap-2">
           <Calendar size={16} />
           Days of the week
         </Label>
         <div className="grid grid-cols-4 gap-3">
           {Object.keys(days).map(day => (
-            <div key={day} className="flex items-center space-x-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+            <div key={day} className="flex items-center space-x-2 p-3 rounded-xl hover:bg-secondary/10 transition-all duration-200 hover:scale-105">
               <Checkbox
                 id={day}
                 checked={days[day]}
                 onCheckedChange={() => handleDayChange(day)}
-                className="data-[state=checked]:bg-gray-900 dark:data-[state=checked]:bg-white data-[state=checked]:border-gray-900 dark:data-[state=checked]:border-white"
+                className="data-[state=checked]:bg-primary data-[state=checked]:border-primary rounded-lg"
               />
               <Label
                 htmlFor={day}
-                className="text-sm font-normal cursor-pointer text-foreground flex-1"
+                className="text-sm font-normal cursor-pointer text-card-foreground flex-1"
               >
                 {day.charAt(0).toUpperCase() + day.slice(1, 3)}
               </Label>
@@ -664,9 +643,9 @@ const ReminderForm = ({ onAddReminder, onEditReminder, editingReminder, onCancel
 
       <Button 
         type="submit" 
-        className="w-full bg-gradient-to-r from-gray-900 to-black dark:from-white dark:to-gray-100 hover:from-black hover:to-gray-800 dark:hover:from-gray-100 dark:hover:to-white text-white dark:text-black shadow-sleek hover:shadow-lg transition-all duration-200 btn-primary"
+        className="w-full bg-card hover:bg-secondary/90 text-card-foreground shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] rounded-2xl py-3 font-semibold"
       >
-        <Plus size={16} className="mr-2" />
+        <Plus size={18} className="mr-3" />
         {editingReminder ? "Update Reminder" : "Add Reminder"}
       </Button>
     </form>
@@ -676,30 +655,38 @@ const ReminderForm = ({ onAddReminder, onEditReminder, editingReminder, onCancel
 const ReminderItem = ({ reminder, onRemove, onEdit }) => {
   const formatDays = (days) => {
     const dayNames = {
-      monday: 'Mon',
-      tuesday: 'Tue',
-      wednesday: 'Wed',
-      thursday: 'Thu',
-      friday: 'Fri',
-      saturday: 'Sat',
-      sunday: 'Sun'
+      monday: 'M',
+      tuesday: 'T',
+      wednesday: 'W',
+      thursday: 'T',
+      friday: 'F',
+      saturday: 'S',
+      sunday: 'S'
     };
     
-    return days.map(day => dayNames[day]).join(', ');
+    // Handle weekdays specially
+    const weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+    const weekends = ['saturday', 'sunday'];
+    
+    if (days.length === 7) return 'Daily';
+    if (days.length === 5 && weekdays.every(day => days.includes(day))) return 'Weekdays';
+    if (days.length === 2 && weekends.every(day => days.includes(day))) return 'Weekends';
+    
+    return days.map(day => dayNames[day]).join('');
   };
 
   return (
-    <Card className="group bg-gradient-to-r from-card to-card/80 border-border/50 shadow-sm hover:shadow-elegant hover:scale-[1.02] transition-all duration-300">
-      <CardContent className="flex items-center justify-between p-4">
-        <div className="flex items-start gap-3 flex-1">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 shrink-0">
-            <Bell size={16} className="text-gray-600 dark:text-gray-400" />
+    <Card className="group bg-card border-border/30 shadow-lg hover:shadow-2xl hover:scale-[1.03] hover:-translate-y-1 transition-all duration-300 rounded-2xl">
+      <CardContent className="p-6">
+        <div className="flex items-start gap-4">
+          <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 shrink-0">
+            <Bell size={18} className="text-card-foreground" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="font-medium text-foreground mb-2 line-clamp-2">
               {reminder.message}
             </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex flex-col gap-1 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Clock size={14} />
                 <span>{reminder.time}</span>
@@ -710,27 +697,25 @@ const ReminderItem = ({ reminder, onRemove, onEdit }) => {
               </div>
             </div>
           </div>
-        </div>
-        
-        <div className="flex items-center gap-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <Button 
-            variant="outline"
-            size="icon"
-            onClick={onEdit} 
-            title="Edit reminder"
-            className="w-9 h-9 border-border/50 hover:bg-muted hover:border-gray-400 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300 transition-all duration-200"
-          >
-            <Edit3 size={14} />
-          </Button>
-          <Button 
-            variant="destructive"
-            size="icon"
-            onClick={onRemove} 
-            title="Remove reminder"
-            className="w-9 h-9 hover:bg-destructive/90 transition-all duration-200"
-          >
-            <Trash2 size={14} />
-          </Button>
+          
+          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
+            <Button 
+              onClick={onEdit} 
+              title="Edit reminder"
+              className="bg-card hover:bg-secondary/90 text-card-foreground shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] rounded-2xl py-2 px-3 font-semibold text-sm"
+            >
+              <Edit3 size={14} className="mr-1" />
+              Edit
+            </Button>
+            <Button 
+              onClick={onRemove} 
+              title="Remove reminder"
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] rounded-2xl py-2 px-3 font-semibold text-sm"
+            >
+              <Trash2 size={14} className="mr-1" />
+              Delete
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
