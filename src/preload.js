@@ -16,12 +16,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Notification controls
   testNotification: () => ipcRenderer.send('test-notification'),
   toggleReminders: (enabled) => ipcRenderer.send('toggle-reminders', enabled),
+  toggleAssistantDragging: (enabled) => ipcRenderer.send('toggle-assistant-dragging', enabled),
+  setAssistantLayer: (layer) => ipcRenderer.send('set-assistant-layer', layer),
   
   // Assistant controls
   showAssistant: (message) => ipcRenderer.send('show-assistant', message),
   hideAssistant: () => ipcRenderer.send('hide-assistant'),
   changeAvatar: (avatar) => ipcRenderer.send('change-avatar', avatar),
   setBubbleSide: (side) => ipcRenderer.send('set-bubble-side', side),
+  selectAvatarFile: () => ipcRenderer.invoke('select-avatar-file'),
   
   // Window controls
   closeWindow: () => ipcRenderer.send('close-window'),

@@ -2,9 +2,9 @@ const Store = require('electron-store');
 
 class TaskyStore {
   constructor() {
-    // Initialize electron-store with schema and defaults
+    // Initialize electron-store with minimal schema to avoid validation issues
     this.store = new Store({
-      name: 'tasky-config',
+      name: 'tasky-config-v2', // New name to avoid cached schema issues
       defaults: {
         reminders: [],
         settings: {
@@ -12,48 +12,19 @@ class TaskyStore {
           enableSound: true,
           enableAssistant: true,
           autoStart: false,
-          notificationType: 'custom', // 'native', 'custom', or 'both'
-          selectedAvatar: 'Clippy', // Avatar character selection
-          darkMode: false, // Dark theme toggle
-          enableAnimation: true, // Assistant bounce animation toggle
+          notificationType: 'custom',
+          selectedAvatar: 'Clippy',
+          darkMode: false,
+          enableAnimation: true,
+          timeFormat: '24',
+          enableDragging: true,
+          assistantLayer: 'above',
+          customAvatarPath: '',
+          customAvatars: []
         },
-        version: '1.0.0'
-      },
-      schema: {
-        reminders: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              message: { type: 'string', maxLength: 200 },
-              time: { type: 'string', pattern: '^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$' },
-              days: {
-                type: 'array',
-                items: {
-                  type: 'string',
-                  enum: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-                }
-              },
-              enabled: { type: 'boolean' }
-            },
-            required: ['id', 'message', 'time', 'days', 'enabled']
-          }
-        },
-        settings: {
-          type: 'object',
-          properties: {
-            enableNotifications: { type: 'boolean' },
-            enableSound: { type: 'boolean' },
-            enableAssistant: { type: 'boolean' },
-            autoStart: { type: 'boolean' },
-            notificationType: { type: 'string', enum: ['native', 'custom', 'both'] },
-            selectedAvatar: { type: 'string', enum: ['Clippy', 'Merlin', 'Rover', 'Genie', 'Rocky', 'Bonzi', 'Peedy', 'Links'] },
-            darkMode: { type: 'boolean' }
-          }
-        },
-        version: { type: 'string' }
+        version: '2.0.0'
       }
+      // Removed schema validation to avoid conflicts with custom avatars
     });
 
     console.log('TaskyStore initialized, config file:', this.store.path);

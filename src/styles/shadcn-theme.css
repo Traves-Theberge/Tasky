@@ -1,35 +1,12 @@
 :root {
-  --background: 216 2% 28%; /* #464647 */
-  --foreground: 0 0% 98%;
-  --card: 216 2% 50%; /* #7f7f7c */
-  --card-foreground: 0 0% 98%;
-  --popover: 216 2% 28%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 15%; /* Dark grey instead of blue */
-  --primary-foreground: 0 0% 98%;
-  --secondary: 216 2% 60%;
-  --secondary-foreground: 0 0% 15%;
-  --muted: 216 2% 40%;
-  --muted-foreground: 0 0% 75%;
-  --accent: 216 2% 55%;
-  --accent-foreground: 0 0% 15%;
-  --destructive: 0 65% 55%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 216 2% 45%;
-  --input: 216 2% 45%;
-  --ring: 0 0% 60%;
-  --radius: 1rem;
-}
-
-.dark {
-  --background: 216 2% 20%; /* Darker version of #464647 */
-  --foreground: 0 0% 98%;
+  --background: 216 2% 20%; /* Dark background */
+  --foreground: 0 0% 98%; /* Light text */
   --card: 216 2% 28%; /* #464647 */
-  --card-foreground: 0 0% 98%;
+  --card-foreground: 0 0% 98%; /* Light text on cards */
   --popover: 216 2% 20%;
   --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 216 2% 20%;
+  --primary: 0 0% 98%; /* Light primary */
+  --primary-foreground: 216 2% 20%; /* Dark text on primary */
   --secondary: 216 2% 25%;
   --secondary-foreground: 0 0% 98%;
   --muted: 216 2% 25%;
@@ -41,6 +18,7 @@
   --border: 216 2% 25%;
   --input: 216 2% 25%;
   --ring: 0 0% 80%;
+  --radius: 1rem;
 }
 
 @layer base {
@@ -110,5 +88,33 @@
   
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--primary));
+  }
+  
+  /* Select dropdown styling */
+  select {
+    color-scheme: dark;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+  }
+  
+  select::-ms-expand {
+    display: none;
+  }
+  
+  select option {
+    background-color: #464647;
+    color: #ffffff;
+    padding: 8px 12px;
+  }
+  
+  select:focus {
+    outline: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
   }
 }

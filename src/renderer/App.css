@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @theme {
   --default-transition-duration: 200ms;
@@ -20,25 +19,14 @@
   --radius: 0.75rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  @theme {
-    --color-background: #333334;
-    --color-foreground: #ffffff;
-    --color-card: #464647;
-    --color-card-foreground: #ffffff;
-    --color-primary: #ffffff;
-    --color-primary-foreground: #333334;
-    --color-muted: #404041;
-    --color-muted-foreground: #b3b3b3;
-    --color-border: #404041;
-  }
-}
+/* Removed - always dark mode now */
 
 /* Custom gradient colors */
 .from-slate-50 { --tw-gradient-from: #464647 !important; --tw-gradient-to: rgba(70, 70, 71, 0) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
 .via-gray-100 { --tw-gradient-to: rgba(127, 127, 124, 0) !important; --tw-gradient-stops: var(--tw-gradient-from), #7f7f7c, var(--tw-gradient-to) !important; }
 .to-neutral-200 { --tw-gradient-to: #7f7f7c !important; }
-.dark .dark\\:via-slate-800 { --tw-gradient-to: rgba(51, 51, 52, 0) !important; --tw-gradient-stops: var(--tw-gradient-from), #333334, var(--tw-gradient-to) !important; }
+/* Gradient for dark theme (always active) */
+.via-slate-800 { --tw-gradient-to: rgba(51, 51, 52, 0) !important; --tw-gradient-stops: var(--tw-gradient-from), #333334, var(--tw-gradient-to) !important; }
 
 /* Ensure base styles are applied */
 * {
@@ -75,14 +63,14 @@ html, body {
 .text-muted-foreground { color: #b3b3b3 !important; }
 .border-border { border-color: #5a5a5b !important; }
 
-/* Dark mode */
-.dark .bg-background { background-color: #333334 !important; }
-.dark .bg-card { background-color: #464647 !important; }
-.dark .bg-primary { background-color: #ffffff !important; }
-.dark .text-foreground { color: #ffffff !important; }
-.dark .text-primary-foreground { color: #333334 !important; }
-.dark .text-muted-foreground { color: #b3b3b3 !important; }
-.dark .border-border { border-color: #404041 !important; }
+/* Always dark mode styles */
+.bg-background { background-color: #333334 !important; }
+.bg-card { background-color: #464647 !important; }
+.bg-primary { background-color: #ffffff !important; }
+.text-foreground { color: #ffffff !important; }
+.text-primary-foreground { color: #333334 !important; }
+.text-muted-foreground { color: #b3b3b3 !important; }
+.border-border { border-color: #404041 !important; }
 
 /* Fallback styles if Tailwind doesn't load */
 .flex { display: flex !important; }
@@ -132,37 +120,25 @@ html, body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
 }
 
-.dark .btn-primary {
-  background: linear-gradient(to right, #111827, #000000) !important;
-  color: white !important;
-}
+/* Already handled above - removed duplicates */
 
-.dark .btn-primary:hover {
-  background: linear-gradient(to right, #000000, #111827) !important;
-  color: white !important;
-}
-
-/* Card styles */
+/* Card styles - always dark */
 .card {
-  background: white !important;
-  border: 1px solid #e5e7eb !important;
+  background: #464647 !important;
+  border: 1px solid #374151 !important;
   border-radius: 0.75rem !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
   padding: 1.5rem !important;
 }
 
-.dark .card {
-  background: #1f2937 !important;
-  border-color: #374151 !important;
-}
-
-/* Input styles */
+/* Input styles - always dark */
 .input {
   width: 100% !important;
   padding: 0.5rem 0.75rem !important;
-  border: 1px solid #d1d5db !important;
+  border: 1px solid #4b5563 !important;
   border-radius: 0.5rem !important;
-  background: white !important;
+  background: #374151 !important;
+  color: white !important;
   font-size: 0.875rem !important;
 }
 
@@ -172,24 +148,13 @@ html, body {
   box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.2) !important;
 }
 
-.dark .input {
-  background: #374151 !important;
-  border-color: #4b5563 !important;
-  color: white !important;
-}
-
-/* Sidebar styles */
+/* Sidebar styles - always dark */  
 .sidebar {
   width: 16rem !important;
-  background: linear-gradient(to bottom, #f9fafb, #f3f4f6) !important;
-  border-right: 1px solid #e5e7eb !important;
+  background: linear-gradient(to bottom, #1f2937, #111827) !important;
+  border-right: 1px solid #374151 !important;
   display: flex !important;
   flex-direction: column !important;
-}
-
-.dark .sidebar {
-  background: linear-gradient(to bottom, #1f2937, #111827) !important;
-  border-right-color: #374151 !important;
 }
 
 /* Navigation button styles */
@@ -205,33 +170,19 @@ html, body {
   transition: all 0.2s ease-in-out !important;
   font-size: 0.875rem !important;
   font-weight: 500 !important;
-  color: #6b7280 !important;
+  color: #9ca3af !important;
   cursor: pointer !important;
 }
 
 .nav-btn:hover {
-  background: rgba(0, 0, 0, 0.05) !important;
-  color: #111827 !important;
-}
-
-.nav-btn.active {
-  background: #111827 !important;
-  color: white !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-}
-
-.dark .nav-btn {
-  color: #9ca3af !important;
-}
-
-.dark .nav-btn:hover {
   background: rgba(255, 255, 255, 0.1) !important;
   color: white !important;
 }
 
-.dark .nav-btn.active {
+.nav-btn.active {
   background: white !important;
   color: #111827 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Top navigation tabs */
@@ -255,36 +206,20 @@ html, body {
 }
 
 .top-nav-btn:hover {
-  background: rgba(0, 0, 0, 0.05) !important;
-}
-
-.top-nav-btn.active {
-  background: #111827 !important;
-  color: white !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-}
-
-.dark .top-nav-btn:hover {
   background: rgba(255, 255, 255, 0.1) !important;
 }
 
-.dark .top-nav-btn.active {
+.top-nav-btn.active {
   background: white !important;
   color: #111827 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Header styles */
+/* Header styles - always dark */
 .header {
-  background: linear-gradient(to right, #ffffff, #f9fafb) !important;
-  border-bottom: 1px solid #e5e7eb !important;
-  padding: 0 1.5rem !important;
-  height: 4rem !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-}
-
-.dark .header {
-  background: linear-gradient(to right, #1f2937, #111827) !important;
-  border-bottom-color: #374151 !important;
+  background: #333334 !important; /* Match main background */
+  border-bottom: none !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
 }

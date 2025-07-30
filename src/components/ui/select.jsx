@@ -3,7 +3,7 @@ import React, { useState } from "react";
 export function Select({ value, onValueChange, children, ...props }) {
   return (
     <select 
-      className="border border-border/30 rounded-xl px-4 py-3 text-card-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
+      className="border border-border/30 rounded-2xl px-4 py-3 text-card-foreground focus:ring-2 focus:ring-green-500/20 focus:border-green-500 shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
       style={{ backgroundColor: '#7f7f7c' }}
       value={value}
       onChange={(e) => onValueChange && onValueChange(e.target.value)}

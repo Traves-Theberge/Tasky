@@ -5,7 +5,10 @@
       "Bash(mkdir:*)",
       "Bash(npm install:*)",
       "Bash(npx:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(rm:*)",
+      "Bash(cp:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

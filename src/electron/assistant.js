@@ -22,7 +22,7 @@ class ClippyAssistant {
       height: 200,
       frame: false,
       transparent: true,
-      alwaysOnTop: true,
+      alwaysOnTop: false, // Will be set by layer setting
       skipTaskbar: true,
       resizable: false,
       movable: true, // Enable dragging
@@ -35,6 +35,9 @@ class ClippyAssistant {
       },
       show: false
     });
+
+    // Default to click-through mode (dragging disabled)
+    // This will be set properly by setDraggingMode() from main.js
 
     // Create simple Clippy HTML with fallback
     const clippyHtml = `
@@ -50,27 +53,24 @@ class ClippyAssistant {
               background: transparent;
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
               overflow: hidden;
-              cursor: pointer;
+              -webkit-app-region: no-drag; /* Default: no drag */
             }
             
             #clippy-container {
               position: absolute;
               width: 200px;
               height: 200px;
-              left: 50%;
+              left: 200px; /* Center in 600px window: (600-200)/2 = 200 */
               top: 0;
-              transform: translateX(-50%);
               display: flex;
               align-items: center;
               justify-content: center;
-              transition: transform 0.3s ease;
-              -webkit-app-region: drag; /* Make the container draggable */
+              -webkit-app-region: drag; /* Only the assistant is draggable */
               cursor: move;
+              z-index: 20; /* Above click-through zones */
             }
             
-            #clippy-container:hover {
-              transform: translateX(-50%) scale(1.1);
-            }
+            /* Remove hover transform that interferes with dragging */
             
             #clippy-character {
               font-size: 80px;
@@ -162,6 +162,7 @@ class ClippyAssistant {
               border-top: 10px solid transparent;
               border-bottom: 10px solid transparent;
             }
+            
           </style>
         </head>
         <body>
@@ -185,7 +186,8 @@ class ClippyAssistant {
               'Rocky': '🗿',
               'Bonzi': '🐵',
               'Peedy': '🦜',
-              'Links': '⛳'
+              'Links': '⛳',
+              'Custom': '' // No fallback frame
             };
             
             const character = document.getElementById('clippy-character');
@@ -193,7 +195,12 @@ class ClippyAssistant {
             
             // Set initial character to selected avatar
             const selectedAvatar = '${this.selectedAvatar}';
-            character.textContent = avatars[selectedAvatar] || avatars['Clippy'] || '📎';
+            if (selectedAvatar === 'Custom' || selectedAvatar.startsWith('custom_')) {
+              // For custom avatars, leave blank initially - custom image will be set via IPC
+              character.textContent = '';
+            } else {
+              character.textContent = avatars[selectedAvatar] || avatars['Clippy'] || '📎';
+            }
             
             let animationsEnabled = true; // Default to enabled
             
@@ -224,20 +231,7 @@ class ClippyAssistant {
               }
             });
             
-            // Hover interaction
-            document.addEventListener('mouseenter', () => {
-              if (!isDelivering && animationsEnabled) {
-                character.style.animation = 'none';
-                character.style.transform = 'scale(1.1)';
-              }
-            });
-            
-            document.addEventListener('mouseleave', () => {
-              if (!isDelivering && animationsEnabled) {
-                character.style.transform = 'scale(1)';
-                character.style.animation = 'bounce 2s infinite';
-              }
-            });
+            // No hover events - they interfere with dragging
             
             // IPC Communication
             const { ipcRenderer } = require('electron');
@@ -270,13 +264,85 @@ class ClippyAssistant {
             });
             
             ipcRenderer.on('clippy-change-avatar', (event, avatarName) => {
+              console.log('=== AVATAR CHANGE EVENT ===');
               console.log('Changing avatar to:', avatarName);
-              character.textContent = avatars[avatarName] || avatars['Clippy'];
+              if (avatarName === 'Custom' || avatarName.startsWith('custom_')) {
+                console.log('This is a custom avatar - waiting for custom image path');
+                // Don't set placeholder immediately, wait for the custom avatar path
+                // character.textContent = '🖼️';
+              } else {
+                console.log('This is a default avatar');
+                character.textContent = avatars[avatarName] || avatars['Clippy'];
+                // Clear any custom image HTML if switching away from custom
+                character.innerHTML = '';
+                character.textContent = avatars[avatarName] || avatars['Clippy'];
+              }
+              console.log('Character content set to:', character.textContent || character.innerHTML);
+              console.log('=== END AVATAR CHANGE EVENT ===');
             });
             
             ipcRenderer.on('clippy-set-bubble-side', (event, side) => {
               console.log('Setting bubble side to:', side);
               bubbleSide = side;
+            });
+
+            ipcRenderer.on('clippy-set-custom-avatar', (event, filePath) => {
+              console.log('=== CUSTOM AVATAR DEBUG ===');
+              console.log('Original file path:', filePath);
+              if (filePath) {
+                // Clear any existing content first
+                character.innerHTML = '';
+                character.textContent = '';
+                
+                // Normalize Windows path for web display
+                let normalizedPath = filePath.replace(/\\/g, '/');
+                // Ensure proper file protocol format
+                const webPath = 'file:///' + normalizedPath;
+                
+                console.log('Setting custom avatar with path:', webPath);
+                
+                // Create a single image element with proper error handling
+                const img = document.createElement('img');
+                img.src = webPath;
+                img.style.cssText = 'width: 80px; height: 80px; object-fit: cover; display: block;';
+                
+                img.onload = function() {
+                  console.log('✅ Custom avatar loaded successfully:', this.src);
+                };
+                
+                img.onerror = function() {
+                  console.error('❌ Custom avatar failed to load:', this.src);
+                  console.error('Original file path was:', filePath);
+                  
+                  // Try alternative path formats
+                  const alternatives = [
+                    normalizedPath,
+                    filePath,
+                    filePath.replace(/\\/g, '/'),
+                    'file://' + normalizedPath,
+                    'file://' + filePath.replace(/\\/g, '/'),
+                  ];
+                  
+                  const currentAttempt = parseInt(this.dataset.attempt || '0');
+                  if (currentAttempt < alternatives.length - 1) {
+                    const nextAttempt = currentAttempt + 1;
+                    this.dataset.attempt = nextAttempt.toString();
+                    const nextPath = `file:///${alternatives[nextAttempt].replace(/^file:\/\/\//, '')}`;
+                    console.log(`Trying attempt ${nextAttempt}: ${nextPath}`);
+                    this.src = nextPath;
+                  } else {
+                    console.error('All path variants failed for desktop assistant, hiding image');
+                    this.style.display = 'none';
+                  }
+                };
+                
+                character.appendChild(img);
+                console.log('Custom avatar image element created and added');
+              } else {
+                console.error('❌ No file path provided for custom avatar');
+                character.textContent = '';
+              }
+              console.log('=== END CUSTOM AVATAR DEBUG ===');
             });
             
             ipcRenderer.on('clippy-hide', () => {
@@ -289,6 +355,8 @@ class ClippyAssistant {
             
             // Handle upcoming notifications response
             ipcRenderer.on('upcoming-notifications-response', (event, notifications) => {
+              isDelivering = true;
+              
               if (notifications.length === 0) {
                 // Show no upcoming notifications message
                 bubble.className = 'notification-bubble ' + bubbleSide;
@@ -297,6 +365,7 @@ class ClippyAssistant {
                 
                 setTimeout(() => {
                   bubble.classList.remove('show');
+                  isDelivering = false;
                 }, 4000);
               } else {
                 // Show upcoming notifications
@@ -312,6 +381,7 @@ class ClippyAssistant {
                 
                 setTimeout(() => {
                   bubble.classList.remove('show');
+                  isDelivering = false;
                 }, 8000);
               }
             });
@@ -346,6 +416,8 @@ class ClippyAssistant {
       this.isVisible = false;
     });
 
+    // No special mouse event handling - keep window always interactive
+
     console.log('Clippy window created successfully');
     return this.window;
   }
@@ -372,8 +444,7 @@ class ClippyAssistant {
     this.window.show();
     this.isVisible = true;
     
-    // Make it stay in position
-    this.window.setAlwaysOnTop(true, 'screen-saver', 1);
+    // Layer setting will be applied by main.js after window creation
 
     // Send message to Clippy with better error handling
     if (message) {
@@ -436,16 +507,29 @@ class ClippyAssistant {
     console.log('Setting avatar to:', avatarName);
     this.selectedAvatar = avatarName;
     
-    // If window exists, destroy and recreate to ensure proper initialization
+    // Don't recreate window - just send the change event
     if (this.window) {
-      const wasVisible = this.isVisible;
-      this.destroy();
+      this.window.webContents.send('clippy-change-avatar', avatarName);
       
-      if (wasVisible) {
-        // Recreate the window with new avatar
+      // If it's a custom avatar, also send the custom path immediately
+      if (avatarName === 'Custom' || avatarName.startsWith('custom_')) {
+        console.log('🔄 Custom avatar detected in setAvatar:', avatarName);
         setTimeout(() => {
-          this.show();
-        }, 100);
+          const TaskyStore = require('./storage');
+          const store = new TaskyStore();
+          const customPath = store.getSetting('customAvatarPath');
+          console.log('=== ASSISTANT CUSTOM AVATAR LOOKUP ===');
+          console.log('Avatar name:', avatarName);
+          console.log('Custom path from storage:', customPath);
+          console.log('Window exists:', !!this.window);
+          if (customPath) {
+            console.log('✅ Found custom path, sending to window:', customPath);
+            this.setCustomAvatarPath(customPath);
+          } else {
+            console.log('❌ No custom avatar path found in storage');
+          }
+          console.log('=== END ASSISTANT CUSTOM AVATAR ===');
+        }, 200);
       }
     }
   }
@@ -454,6 +538,77 @@ class ClippyAssistant {
     console.log('Setting bubble side to:', side);
     if (this.window && this.isVisible) {
       this.window.webContents.send('clippy-set-bubble-side', side);
+    }
+  }
+
+  setDraggingMode(enabled) {
+    console.log('Setting dragging mode to:', enabled);
+    if (this.window) {
+      if (enabled) {
+        // Enable dragging - make entire window interactive
+        this.window.setIgnoreMouseEvents(false);
+      } else {
+        // Disable dragging - make notification areas click-through
+        this.window.setIgnoreMouseEvents(true, {
+          forward: true,
+          shape: [
+            // Left notification area (0 to 200px)
+            { x: 0, y: 0, width: 200, height: 200 },
+            // Right notification area (400 to 600px)  
+            { x: 400, y: 0, width: 200, height: 200 }
+          ]
+        });
+      }
+    }
+  }
+
+  setCustomAvatarPath(filePath) {
+    console.log('=== ASSISTANT setCustomAvatarPath ===');
+    console.log('File path received:', filePath);
+    console.log('Window exists:', !!this.window);
+    console.log('Window destroyed:', this.window ? this.window.isDestroyed() : 'N/A');
+    
+    if (this.window) {
+      // Wait a moment for the window to be ready
+      setTimeout(() => {
+        if (this.window && !this.window.isDestroyed()) {
+          console.log('✅ Sending custom avatar path to window:', filePath);
+          this.window.webContents.send('clippy-set-custom-avatar', filePath);
+        } else {
+          console.error('❌ Assistant window not available for custom avatar');
+        }
+      }, 100);
+    } else {
+      console.error('❌ No assistant window available for custom avatar');
+    }
+    console.log('=== END ASSISTANT setCustomAvatarPath ===');
+  }
+
+  setLayer(layer) {
+    console.log('Setting assistant layer to:', layer);
+    if (this.window) {
+      try {
+        if (layer === 'below') {
+          // Set window to appear below other windows
+          this.window.setAlwaysOnTop(false);
+          // Try setLevel if available (macOS), otherwise just use setAlwaysOnTop(false)
+          if (typeof this.window.setLevel === 'function') {
+            this.window.setLevel('desktop');
+          }
+        } else {
+          // Set window to appear above other windows (default)
+          this.window.setAlwaysOnTop(true, 'screen-saver', 1);
+        }
+        console.log('✅ Assistant layer set successfully to:', layer);
+      } catch (error) {
+        console.error('❌ Error setting assistant layer:', error);
+        // Fallback to basic always on top behavior
+        if (layer === 'below') {
+          this.window.setAlwaysOnTop(false);
+        } else {
+          this.window.setAlwaysOnTop(true);
+        }
+      }
     }
   }
 }

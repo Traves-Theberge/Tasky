@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, dialog } = require('electron');
 const path = require('path');
 const ReminderScheduler = require(path.join(process.cwd(), 'src', 'electron', 'scheduler'));
 const TaskyStore = require(path.join(process.cwd(), 'src', 'electron', 'storage'));
@@ -32,6 +32,7 @@ const createWindow = () => {
     minHeight: 650,
     maxHeight: 650,
     resizable: false, // Disable window resizing
+    minimizable: true, // Ensure window can be minimized
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -39,14 +40,19 @@ const createWindow = () => {
     },
     icon: path.join(__dirname, '../assets/app-icon.png'),
     show: false, // Don't show initially as this is a tray app
-    skipTaskbar: true,
+    skipTaskbar: false, // Show in taskbar when minimized
+    alwaysOnTop: false, // Don't stay on top so it can be minimized properly
     frame: false, // Remove the entire window frame
     titleBarStyle: 'hidden',
+    movable: true, // Enable window dragging
     autoHideMenuBar: true, // Hide the menu bar
   });
 
   // Remove the menu bar completely
   mainWindow.setMenuBarVisibility(false);
+  
+  // Force window to show in taskbar even when frameless
+  mainWindow.setSkipTaskbar(false);
 
   // and load the index.html of the app.
   // These constants are injected by Electron Forge Vite plugin
@@ -93,6 +99,29 @@ app.whenReady().then(() => {
   const savedAvatar = settings.selectedAvatar || 'Clippy';
   assistant.setAvatar(savedAvatar);
   
+  // If it's a custom avatar, set the custom path
+  if (savedAvatar === 'Custom' || savedAvatar.startsWith('custom_')) {
+    const customPath = settings.customAvatarPath;
+    console.log('Loading custom avatar at startup:', savedAvatar, 'path:', customPath);
+    if (customPath) {
+      // Set custom avatar path after the assistant window is shown
+      setTimeout(() => {
+        console.log('Setting custom avatar path on startup:', customPath);
+        if (assistant && assistant.window) {
+          assistant.setCustomAvatarPath(customPath);
+        }
+      }, 3000); // Wait for assistant to be fully loaded
+    }
+  }
+  
+  // Apply dragging setting
+  const enableDragging = settings.enableDragging !== undefined ? settings.enableDragging : true;
+  assistant.setDraggingMode(enableDragging);
+  
+  // Apply layer setting - defer until window is created
+  const assistantLayer = settings.assistantLayer || 'above';
+  console.log('Initial layer setting will be:', assistantLayer);
+  
   // Apply animation setting
   const enableAnimation = settings.enableAnimation !== undefined ? settings.enableAnimation : true;
   setTimeout(() => {
@@ -128,6 +157,12 @@ app.whenReady().then(() => {
         if (assistant) {
           console.log('Creating persistent desktop companion');
           assistant.show(); // Show without message first
+          
+          // Apply layer setting after window is created and shown
+          setTimeout(() => {
+            console.log('Applying layer setting after window creation:', assistantLayer);
+            assistant.setLayer(assistantLayer);
+          }, 1000);
           
           // Welcome message after companion is positioned
           setTimeout(() => {
@@ -364,6 +399,18 @@ ipcMain.on('set-setting', (event, key, value) => {
             assistant.window.webContents.send('toggle-animation', value);
           }
           break;
+        case 'assistantLayer':
+          console.log('Assistant layer setting changed to:', value);
+          if (assistant) {
+            assistant.setLayer(value);
+          }
+          break;
+        case 'enableDragging':
+          console.log('Dragging setting changed to:', value);
+          if (assistant) {
+            assistant.setDraggingMode(value);
+          }
+          break;
       }
     }
   }
@@ -391,9 +438,23 @@ ipcMain.on('close-window', () => {
 });
 
 ipcMain.on('minimize-window', () => {
+  console.log('=== MINIMIZE WINDOW ===');
+  console.log('MainWindow exists:', !!mainWindow);
   if (mainWindow) {
-    mainWindow.minimize();
+    console.log('Window minimizable:', mainWindow.isMinimizable());
+    console.log('Window visible:', mainWindow.isVisible());
+    console.log('Skip taskbar:', mainWindow.isSkipTaskbar());
+    console.log('Calling minimize()');
+    try {
+      // Ensure window shows in taskbar before minimizing
+      mainWindow.setSkipTaskbar(false);
+      mainWindow.minimize();
+      console.log('✅ Minimize successful');
+    } catch (error) {
+      console.error('❌ Minimize failed:', error);
+    }
   }
+  console.log('=== END MINIMIZE ===');
 });
 
 ipcMain.on('show-assistant', (event, message) => {
@@ -421,11 +482,87 @@ ipcMain.on('change-avatar', (event, avatar) => {
     // Simply change the avatar without destroying the assistant
     assistant.setAvatar(avatar);
     
+    // If it's a custom avatar, also send the path immediately
+    if (avatar === 'Custom' || avatar.startsWith('custom_')) {
+      const customPath = store.getSetting('customAvatarPath');
+      console.log('=== CUSTOM AVATAR MAIN PROCESS ===');
+      console.log('Avatar name:', avatar);
+      console.log('Custom path from storage:', customPath);
+      console.log('Assistant exists:', !!assistant);
+      console.log('Assistant window exists:', !!(assistant && assistant.window));
+      
+      if (customPath) {
+        // Set the custom avatar path after avatar change is processed
+        setTimeout(() => {
+          if (assistant && assistant.window) {
+            console.log('✅ Sending custom avatar path to assistant:', customPath);
+            assistant.setCustomAvatarPath(customPath);
+          } else {
+            console.error('❌ Assistant or window not available for custom avatar');
+          }
+        }, 1000); // Increased delay
+      } else {
+        console.error('❌ No custom avatar path found for avatar:', avatar);
+      }
+      console.log('=== END CUSTOM AVATAR MAIN ===');
+    }
+    
     // Send a message from the new avatar
     setTimeout(() => {
-      assistant.speak(`Hi! I'm your new ${avatar} companion! 🎉`);
+      if (avatar === 'Custom' || avatar.startsWith('custom_')) {
+        assistant.speak(`Hi! I'm your custom companion! ✨`);
+      } else {
+        assistant.speak(`Hi! I'm your new ${avatar} companion! 🎉`);
+      }
     }, 500);
   }
+});
+
+ipcMain.on('toggle-assistant-dragging', (event, enabled) => {
+  console.log('Toggling assistant dragging:', enabled);
+  if (assistant) {
+    assistant.setDraggingMode(enabled);
+  }
+});
+
+ipcMain.on('set-assistant-layer', (event, layer) => {
+  console.log('=== IPC SET ASSISTANT LAYER ===');
+  console.log('Received layer setting:', layer);
+  console.log('Assistant exists:', !!assistant);
+  if (assistant) {
+    console.log('Calling assistant.setLayer with:', layer);
+    assistant.setLayer(layer);
+  } else {
+    console.error('❌ Assistant not available for layer setting');
+  }
+  console.log('=== END IPC SET ASSISTANT LAYER ===');
+});
+
+ipcMain.handle('select-avatar-file', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: 'Select Avatar Image',
+    filters: [
+      { name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'] }
+    ],
+    properties: ['openFile']
+  });
+
+  if (result.canceled) {
+    return null;
+  }
+
+  const filePath = result.filePaths[0];
+  console.log('Selected avatar file:', filePath);
+  
+  // Test if file exists
+  const fs = require('fs');
+  if (fs.existsSync(filePath)) {
+    console.log('✅ File exists and is accessible');
+  } else {
+    console.error('❌ File does not exist or is not accessible');
+  }
+
+  return filePath;
 });
 
 ipcMain.on('get-upcoming-notifications', (event) => {
