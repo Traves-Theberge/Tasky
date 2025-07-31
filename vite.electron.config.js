@@ -27,7 +27,7 @@ export default defineConfig({
         'util'
       ],
       output: {
-        dir: '.vite/build/electron',
+        dir: '.vite/build',
         format: 'cjs',
         entryFileNames: '[name].js',
         chunkFileNames: '[name].js',
@@ -35,9 +35,9 @@ export default defineConfig({
         inlineDynamicImports: false
       }
     },
-    outDir: '.vite/build/electron',
+    outDir: '.vite/build',
     emptyOutDir: true,
-    target: 'node'
+    target: 'node18'
   },
   resolve: {
     browserField: false,

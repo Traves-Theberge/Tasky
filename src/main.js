@@ -1,8 +1,8 @@
 const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, dialog } = require('electron');
 const path = require('path');
-const ReminderScheduler = require(path.join(__dirname, 'electron', 'scheduler.js'));
-const TaskyStore = require(path.join(__dirname, 'electron', 'storage.js'));
-const ClippyAssistant = require(path.join(__dirname, 'electron', 'assistant.js'));
+const ReminderScheduler = require(path.join(process.cwd(), 'src', 'electron', 'scheduler'));
+const TaskyStore = require(path.join(process.cwd(), 'src', 'electron', 'storage'));
+const ClippyAssistant = require(path.join(process.cwd(), 'src', 'electron', 'assistant'));
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -36,7 +36,7 @@ const createWindow = () => {
       nodeIntegration: false,
       contextIsolation: true,
     },
-    icon: path.join(__dirname, 'assets', 'icon.ico'),
+    icon: path.join(__dirname, '../assets/icon.ico'),
     show: false, // Don't show initially as this is a tray app
     skipTaskbar: false, // Show in taskbar when minimized
     alwaysOnTop: false, // Don't stay on top so it can be minimized properly
@@ -58,7 +58,7 @@ const createWindow = () => {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
     const rendererName = typeof MAIN_WINDOW_VITE_NAME !== 'undefined' ? MAIN_WINDOW_VITE_NAME : 'main_window';
-    const indexPath = path.join(__dirname, '..', 'renderer', rendererName, 'index.html');
+    const indexPath = path.join(__dirname, `../renderer/${rendererName}/index.html`);
     console.log('Loading renderer from:', indexPath);
     mainWindow.loadFile(indexPath);
   }
@@ -217,10 +217,9 @@ const createTray = () => {
   // Try to load custom icon first, fallback to data URL
   // Try multiple possible paths for the tray icon
   const possiblePaths = [
-    path.join(__dirname, 'assets', 'tray-icon.png'),
-    path.join(__dirname, '..', 'assets', 'tray-icon.png'),
-    path.join(__dirname, '..', '..', 'src', 'assets', 'tray-icon.png'),
-    path.join(process.cwd(), 'src', 'assets', 'tray-icon.png')
+    path.join(__dirname, '../assets/tray-icon.png'),
+    path.join(__dirname, '../../src/assets/tray-icon.png'),
+    path.join(process.cwd(), 'src/assets/tray-icon.png')
   ];
   
   let iconPath = null;
