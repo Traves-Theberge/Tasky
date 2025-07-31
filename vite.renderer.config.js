@@ -6,12 +6,17 @@ import { resolve } from 'path';
 export default defineConfig({
   plugins: [react()],
   root: resolve('src/renderer'),
+  base: './',
+  css: {
+    postcss: './postcss.config.mjs'
+  },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
     },
   },
   build: {
+    outDir: 'src/renderer/dist',
     rollupOptions: {
       input: resolve('src/renderer/index.html')
     }

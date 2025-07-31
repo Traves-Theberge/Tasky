@@ -1,16 +1,16 @@
 {
   "name": "tasky",
   "version": "1.0.0",
-  "description": "A Windows tray application for recurring workday reminders with animated assistant",
+  "description": "A cross-platform desktop reminder application with animated assistant companion. Features recurring reminders, notification sounds, and customizable desktop companion.",
   "main": ".vite/build/main.js",
   "homepage": "./",
   "scripts": {
-    "start": "npm run build-electron && electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "publish": "electron-forge publish",
+    "start": "npm run build-renderer && npm run build-electron && electron .",
+    "build": "npm run build-renderer && npm run build-electron",
+    "dist": "npm run build && npx electron-builder",
+    "pack": "npx electron-builder --dir",
     "lint": "eslint --ext .ts,.tsx .",
-    "dev": "npm run build-electron && electron-forge start",
+    "dev": "npm run build-electron && electron .",
     "electron": "electron src/main.js",
     "build-renderer": "vite build --config vite.renderer.config.js",
     "build-electron": "vite build --config vite.electron.config.js"
@@ -18,75 +18,44 @@
   "keywords": [
     "electron",
     "reminder",
+    "desktop-app",
     "tray",
     "assistant",
-    "notifications"
+    "notifications",
+    "scheduler",
+    "productivity",
+    "cross-platform",
+    "clippy"
   ],
-  "author": "Tasky Team",
+  "author": {
+    "name": "Traves Theberge",
+    "email": "Traves.theberge@gmail.com"
+  },
   "license": "MIT",
-  "config": {
-    "forge": {
-      "packagerConfig": {
-        "asar": true,
-        "icon": "./src/assets/icon.ico",
-        "executableName": "Tasky",
-        "appBundleId": "com.tasky.reminderapp",
-        "appCategoryType": "public.app-category.productivity",
-        "platform": "win32",
-        "arch": "x64",
-        "out": "./dist",
-        "overwrite": true,
-        "win32metadata": {
-          "CompanyName": "Tasky Team",
-          "FileDescription": "Tasky - Your Reminder Assistant",
-          "OriginalFilename": "Tasky.exe",
-          "ProductName": "Tasky",
-          "InternalName": "Tasky",
-          "FileVersion": "1.0.0",
-          "ProductVersion": "1.0.0"
-        }
-      },
-      "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "platforms": ["win32"],
-          "config": {
-            "name": "tasky",
-            "authors": "Tasky Team",
-            "description": "Your friendly reminder assistant with Clippy-style helper",
-            "setupIcon": "./src/assets/setup-icon.ico",
-            "iconUrl": "https://github.com/tasky/tasky/raw/main/assets/icon.ico",
-            "setupExe": "TaskySetup.exe",
-            "noMsi": true
-          }
-        }
-      ],
-      "plugins": [
-        {
-          "name": "@electron-forge/plugin-vite",
-          "config": {
-            "build": [
-              {
-                "entry": "src/main.js",
-                "config": "vite.main.config.js"
-              },
-              {
-                "entry": "src/preload.js",
-                "config": "vite.preload.config.js"
-              }
-            ],
-            "buildElectronModules": {
-              "config": "vite.electron.config.js"
-            },
-            "renderer": [
-              {
-                "name": "main_window",
-                "config": "vite.renderer.config.js"
-              }
-            ]
-          }
-        }
-      ]
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tasky"
+  },
+  "build": {
+    "appId": "com.tasky.reminderapp",
+    "productName": "Tasky",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      ".vite/build/**/*",
+      "dist/**/*",
+      "node_modules/**/*",
+      "src/assets/**/*",
+      "src/renderer/dist/**/*"
+    ],
+    "win": {
+      "icon": "src/assets/icon.ico",
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     }
   },
   "devDependencies": {
@@ -101,6 +70,7 @@
     "autoprefixer": "^10.4.21",
     "concurrently": "^9.2.0",
     "electron": "^29.4.6",
+    "electron-builder": "^26.0.12",
     "eslint": "^8.0.1",
     "glob": "^11.0.3",
     "postcss": "^8.5.6",
@@ -111,14 +81,12 @@
   "dependencies": {
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "electron-squirrel-startup": "^1.0.1",
     "electron-store": "^8.1.0",
     "framer-motion": "^12.23.11",
     "lucide-react": "^0.533.0",
     "node-cron": "^3.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "sound-play": "^1.1.0",
     "tailwind-merge": "^3.3.1"
   }
 }

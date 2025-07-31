@@ -30,6 +30,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Window controls
   closeWindow: () => ipcRenderer.send('close-window'),
   minimizeWindow: () => ipcRenderer.send('minimize-window'),
+  forceQuit: () => ipcRenderer.send('force-quit'),
   
   // Listen for events from main process
   onReminderNotification: (callback) => ipcRenderer.on('reminder-notification', callback),

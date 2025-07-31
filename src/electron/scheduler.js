@@ -1,18 +1,30 @@
+/**
+ * ReminderScheduler - Handles scheduling and triggering of reminders
+ * 
+ * This class manages cron-based scheduling of reminders, handles notification
+ * display, and plays notification sounds. It provides fallback mechanisms
+ * for cross-platform compatibility.
+ */
+
 const cron = require('node-cron');
-const { Notification } = require('electron');
-const sound = require('sound-play');
+const { Notification, app } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 
 class ReminderScheduler {
   constructor() {
-    this.scheduledTasks = new Map();
-    this.notificationsEnabled = true;
-    this.soundEnabled = true;
-    this.notificationType = 'custom'; // 'native', 'custom', or 'both'
+    this.scheduledTasks = new Map();    // Maps reminder IDs to cron tasks
+    this.notificationsEnabled = true;   // Global notification toggle
+    this.soundEnabled = true;           // Global sound toggle
+    this.notificationType = 'custom';   // Legacy setting for compatibility
   }
 
-  // Convert days array to cron pattern
+  /**
+   * Converts an array of day names and time into a cron pattern
+   * @param {string[]} days - Array of day names (e.g., ['monday', 'tuesday'])
+   * @param {string} time - Time in HH:MM format
+   * @returns {string} Cron pattern string
+   */
   daysToCronPattern(days, time) {
     const dayMap = {
       'sunday': 0,
@@ -44,7 +56,9 @@ class ReminderScheduler {
 
     try {
       const cronPattern = this.daysToCronPattern(days, time);
-      console.log(`Scheduling reminder ${id} with pattern: ${cronPattern}`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Scheduling reminder ${id} with pattern: ${cronPattern}`);
+      }
       
       const task = cron.schedule(cronPattern, () => {
         this.triggerReminder(reminder);
@@ -54,9 +68,13 @@ class ReminderScheduler {
       });
 
       this.scheduledTasks.set(id, task);
-      console.log(`Reminder ${id} scheduled successfully`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Reminder ${id} scheduled successfully`);
+      }
     } catch (error) {
-      console.error(`Failed to schedule reminder ${id}:`, error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`Failed to schedule reminder ${id}:`, error);
+      }
     }
   }
 
@@ -66,7 +84,9 @@ class ReminderScheduler {
     if (task) {
       task.stop();
       this.scheduledTasks.delete(id);
-      console.log(`Reminder ${id} removed`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Reminder ${id} removed`);
+      }
     }
   }
 
@@ -79,13 +99,17 @@ class ReminderScheduler {
   // Toggle all notifications on/off
   toggleNotifications(enabled) {
     this.notificationsEnabled = enabled;
-    console.log(`Notifications ${enabled ? 'enabled' : 'disabled'}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Notifications ${enabled ? 'enabled' : 'disabled'}`);
+    }
   }
 
   // Toggle sound on/off
   toggleSound(enabled) {
     this.soundEnabled = enabled;
-    console.log(`Sound ${enabled ? 'enabled' : 'disabled'}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Sound ${enabled ? 'enabled' : 'disabled'}`);
+    }
   }
 
   // Set notification type (legacy - now only used for Clippy bubble side)
@@ -96,7 +120,9 @@ class ReminderScheduler {
     } else {
       this.bubbleSide = 'left';
     }
-    console.log(`Clippy bubble side set to: ${this.bubbleSide}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Clippy bubble side set to: ${this.bubbleSide}`);
+    }
     
     // Update Clippy bubble side
     if (global.assistant) {
@@ -111,32 +137,28 @@ class ReminderScheduler {
 
   // Trigger a reminder (show notification, play sound, etc.)
   triggerReminder(reminder) {
-    console.log('Message:', reminder.message);
-    console.log('Notifications enabled:', this.notificationsEnabled);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Triggering reminder:', reminder.message);
+    }
     
     if (!this.notificationsEnabled) {
-      console.log('Notifications are disabled, skipping');
       return;
     }
     
     // Play sound if enabled
     if (this.soundEnabled) {
-      console.log('Playing notification sound');
       this.playNotificationSound();
     }
     
     // Emit event for other components
     if (global.mainWindow && global.mainWindow.webContents) {
-      console.log('Sending reminder-triggered event to main window');
       global.mainWindow.webContents.send('reminder-triggered', reminder);
     }
     
     // Use Clippy for notifications if available, otherwise fall back to native notifications
     if (global.assistant && global.assistant.isVisible) {
-      console.log('Clippy delivering reminder notification:', reminder.message);
       global.assistant.speak(reminder.message);
     } else {
-      console.log('Clippy not available, showing native notification');
       this.showNotification(reminder);
     }
     
@@ -147,12 +169,12 @@ class ReminderScheduler {
     try {
       // Check if notifications are supported
       if (!Notification.isSupported()) {
-        console.error('Native notifications are not supported on this system');
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Native notifications are not supported on this system');
+        }
         this.showFallbackNotification(reminder);
         return;
       }
-
-      console.log('Creating native notification...');
       const notification = new Notification({
         title: '📋 Tasky Reminder',
         body: reminder.message,
@@ -162,30 +184,26 @@ class ReminderScheduler {
         icon: path.join(__dirname, '../assets/app-icon.png')
       });
 
-      console.log('Showing notification...');
       notification.show();
       
       notification.on('click', () => {
-        console.log('Notification clicked - bringing app to front');
         if (global.mainWindow) {
           global.mainWindow.show();
           global.mainWindow.focus();
         }
       });
 
-      notification.on('close', () => {
-        console.log('Notification closed');
-      });
-
       notification.on('failed', (error) => {
-        console.error('Notification failed:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Notification failed:', error);
+        }
         this.showFallbackNotification(reminder);
       });
 
-      console.log('✅ Native notification created successfully');
-
     } catch (error) {
-      console.error('Failed to show native notification:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to show native notification:', error);
+      }
       this.showFallbackNotification(reminder);
     }
   }
@@ -233,91 +251,375 @@ class ReminderScheduler {
       return;
     }
 
-    
     try {
       const fs = require('fs');
       
       // Try multiple possible paths for the notification.mp3 file
       const possiblePaths = [
+        // Development paths
         path.join(__dirname, '../assets/notification.mp3'),
         path.join(__dirname, '../../src/assets/notification.mp3'),
         path.join(process.cwd(), 'src/assets/notification.mp3'),
-        path.join(__dirname, '../../assets/notification.mp3')
+        path.join(__dirname, '../../assets/notification.mp3'),
+        // Packaged app paths
+        path.join(process.resourcesPath, 'app.asar', 'src', 'assets', 'notification.mp3'),
+        path.join(process.resourcesPath, 'src', 'assets', 'notification.mp3'),
+        path.join(app.getAppPath(), 'src', 'assets', 'notification.mp3'),
+        // Additional fallback paths for different packaging configurations
+        path.join(process.resourcesPath, 'app', 'src', 'assets', 'notification.mp3'),
+        path.join(__dirname, '..', '..', '..', 'src', 'assets', 'notification.mp3')
       ];
       
       let customSoundPath = null;
-      console.log('Searching for notification.mp3 file...');
       
       for (const testPath of possiblePaths) {
-        console.log('Checking path:', testPath);
         if (fs.existsSync(testPath)) {
           customSoundPath = testPath;
-          console.log('✓ Found notification sound at:', customSoundPath);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✓ Found notification sound at:', customSoundPath);
+          }
           break;
-        } else {
-          console.log('✗ Not found at:', testPath);
         }
       }
       
       if (customSoundPath) {
-        console.log('Attempting to play sound file:', customSoundPath);
-        
-        // Try sound-play library first
-        sound.play(customSoundPath)
-          .then(() => {
-            console.log('✓ Sound played successfully with sound-play');
-          })
-          .catch((soundError) => {
-            console.error('sound-play failed:', soundError);
-            console.log('Trying Windows Media Player fallback...');
-            
-            // Fallback to Windows Media Player
-            if (process.platform === 'win32') {
-              spawn('powershell', [
-                '-c', 
-                `Add-Type -AssemblyName presentationCore; $mediaPlayer = New-Object system.windows.media.mediaplayer; $mediaPlayer.open('${customSoundPath.replace(/\\/g, '\\\\')}'); $mediaPlayer.play();`
-              ], { windowsHide: true })
-                .on('close', (code) => {
-                  if (code === 0) {
-                    console.log('✓ Sound played with PowerShell MediaPlayer');
-                  } else {
-                    console.error('PowerShell MediaPlayer failed with code:', code);
-                    this.playSystemSound();
-                  }
-                });
-            } else {
-              console.log('Non-Windows platform, using system sound');
-              this.playSystemSound();
+        // Try multiple approaches for playing sound
+        this.playSoundWithElectron(customSoundPath)
+          .catch(() => {
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Electron audio failed, trying alternative method...');
             }
+            return this.playSoundWithAudioContext(customSoundPath);
+          })
+          .catch(() => {
+            if (process.env.NODE_ENV === 'development') {
+              console.log('All audio methods failed, using system sound');
+            }
+            this.playSystemSound();
           });
       } else {
-        console.warn('No notification.mp3 file found, using system sound');
         this.playSystemSound();
       }
     } catch (error) {
-      console.error('Exception in playNotificationSound:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Exception in playNotificationSound:', error);
+      }
       this.playSystemSound();
     }
+  }
+
+  // Play sound using Electron's built-in capabilities
+  playSoundWithElectron(soundPath) {
+    return new Promise((resolve, reject) => {
+    try {
+      // Create a hidden browser window to play the sound
+      const { BrowserWindow } = require('electron');
+      
+      const soundWindow = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false,
+          webSecurity: false // Allow file:// URLs to work properly
+        }
+      });
+
+      // Convert Windows path to proper file URL
+      let fileUrl;
+      if (process.platform === 'win32') {
+        // Handle Windows paths properly
+        fileUrl = `file:///${soundPath.replace(/\\/g, '/').replace(/^([A-Z]):/, '$1:')}`;
+      } else {
+        fileUrl = `file://${soundPath}`;
+      }
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Using audio file URL:', fileUrl);
+      }
+      
+      // Load HTML with audio element
+      const audioHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Sound Player</title>
+        </head>
+        <body>
+          <audio id="audio" preload="auto" autoplay>
+            <source src="${fileUrl}" type="audio/mpeg">
+            <source src="${fileUrl}" type="audio/mp3">
+            <source src="${fileUrl}" type="audio/wav">
+          </audio>
+          <script>
+            console.log('Audio script starting...');
+            const audio = document.getElementById('audio');
+            
+            // Set volume
+            audio.volume = 0.7;
+            
+            // Add event listeners
+            audio.addEventListener('loadstart', () => console.log('Audio load started'));
+            audio.addEventListener('canplay', () => console.log('Audio can play'));
+            audio.addEventListener('canplaythrough', () => console.log('Audio can play through'));
+            audio.addEventListener('playing', () => console.log('Audio is playing!'));
+            audio.addEventListener('ended', () => {
+              console.log('Audio ended');
+              setTimeout(() => window.close(), 100);
+            });
+            audio.addEventListener('error', (e) => {
+              console.error('Audio error:', e, audio.error);
+              setTimeout(() => window.close(), 100);
+            });
+            
+            // Try to play immediately
+            console.log('Attempting to play audio...');
+            const playPromise = audio.play();
+            
+            if (playPromise !== undefined) {
+              playPromise
+                .then(() => {
+                  console.log('Audio play() succeeded');
+                  // Auto-close after audio duration + buffer
+                  setTimeout(() => {
+                    if (!soundWindow || !soundWindow.isDestroyed()) {
+                      window.close();
+                    }
+                  }, 3000);
+                  resolve();
+                })
+                .catch(error => {
+                  console.error('Audio play() failed:', error);
+                  reject(error);
+                  window.close();
+                });
+            }
+            
+            // Emergency close after 8 seconds
+            setTimeout(() => window.close(), 8000);
+          </script>
+        </body>
+        </html>
+      `;
+
+      soundWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(audioHtml)}`);
+      
+      soundWindow.webContents.once('did-finish-load', () => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✓ Sound window loaded, attempting audio playback');
+        }
+      });
+
+      soundWindow.on('closed', () => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Sound window closed');
+        }
+      });
+
+      // Fallback: close window after 10 seconds and reject
+      setTimeout(() => {
+        if (soundWindow && !soundWindow.isDestroyed()) {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Force closing sound window after timeout');
+          }
+          soundWindow.close();
+          reject(new Error('Audio playback timeout'));
+        }
+      }, 10000);
+
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Electron sound playback failed:', error);
+      }
+      reject(error);
+    }
+    });
+  }
+
+  // Alternative sound method using AudioContext
+  playSoundWithAudioContext(soundPath) {
+    return new Promise((resolve, reject) => {
+      try {
+        const fs = require('fs');
+        const { BrowserWindow } = require('electron');
+        
+        // Read the audio file
+        const audioBuffer = fs.readFileSync(soundPath);
+        const base64Audio = audioBuffer.toString('base64');
+        
+        const soundWindow = new BrowserWindow({
+          show: false,
+          webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false,
+            webSecurity: false
+          }
+        });
+
+        const audioContextHtml = `
+          <!DOCTYPE html>
+          <html>
+          <head><title>Audio Context Player</title></head>
+          <body>
+            <script>
+              console.log('AudioContext method starting...');
+              
+              const audioData = 'data:audio/mpeg;base64,${base64Audio}';
+              
+              fetch(audioData)
+                .then(response => response.arrayBuffer())
+                .then(data => {
+                  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                  return audioContext.decodeAudioData(data);
+                })
+                .then(audioBuffer => {
+                  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                  const source = audioContext.createBufferSource();
+                  source.buffer = audioBuffer;
+                  
+                  const gainNode = audioContext.createGain();
+                  gainNode.gain.value = 0.7;
+                  
+                  source.connect(gainNode);
+                  gainNode.connect(audioContext.destination);
+                  
+                  source.onended = () => {
+                    console.log('AudioContext playback ended');
+                    setTimeout(() => window.close(), 100);
+                  };
+                  
+                  source.start();
+                  console.log('AudioContext playback started');
+                })
+                .catch(error => {
+                  console.error('AudioContext failed:', error);
+                  setTimeout(() => window.close(), 100);
+                });
+              
+              setTimeout(() => window.close(), 5000);
+            </script>
+          </body>
+          </html>
+        `;
+
+        soundWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(audioContextHtml)}`);
+        
+        soundWindow.webContents.once('did-finish-load', () => {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✓ AudioContext window loaded');
+          }
+          resolve();
+        });
+
+        soundWindow.on('closed', () => {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('AudioContext window closed');
+          }
+        });
+
+        setTimeout(() => {
+          if (soundWindow && !soundWindow.isDestroyed()) {
+            soundWindow.close();
+            reject(new Error('AudioContext timeout'));
+          }
+        }, 6000);
+
+      } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('AudioContext method failed:', error);
+        }
+        reject(error);
+      }
+    });
   }
   
   // Fallback system sound method
   playSystemSound() {
-    console.log('Playing system notification sound as fallback');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Playing system notification sound as fallback');
+    }
     try {
-      if (process.platform === 'win32') {
-        // Use Windows built-in notification sound
-        spawn('powershell', ['-c', '(New-Object Media.SoundPlayer "C:\\Windows\\Media\\Windows Notify System Generic.wav").PlaySync();'], { 
-          windowsHide: true 
-        })
-        .on('close', (code) => {
-        });
-      } else {
-        // For other platforms, try system bell
-        console.log('Using ASCII bell for non-Windows platform');
-        process.stdout.write('\u0007'); // ASCII bell character
+      // Use Electron's shell.beep() if available, or create a simple beep sound
+      const { shell } = require('electron');
+      
+      if (shell && typeof shell.beep === 'function') {
+        shell.beep();
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✓ Played system beep via Electron shell');
+        }
+        return;
       }
+
+      // Alternative: Create a simple beep using Web Audio API in a hidden window
+      const { BrowserWindow } = require('electron');
+      
+      const beepWindow = new BrowserWindow({
+        show: false,
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false
+        }
+      });
+
+      const beepHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head><title>Beep</title></head>
+        <body>
+          <script>
+            try {
+              const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+              const oscillator = audioContext.createOscillator();
+              const gainNode = audioContext.createGain();
+              
+              oscillator.connect(gainNode);
+              gainNode.connect(audioContext.destination);
+              
+              oscillator.frequency.value = 800;
+              oscillator.type = 'sine';
+              
+              gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+              gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+              
+              oscillator.start(audioContext.currentTime);
+              oscillator.stop(audioContext.currentTime + 0.5);
+              
+              setTimeout(() => window.close(), 1000);
+            } catch (error) {
+              console.error('Beep failed:', error);
+              window.close();
+            }
+          </script>
+        </body>
+        </html>
+      `;
+
+      beepWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(beepHtml)}`);
+      
+      beepWindow.on('closed', () => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✓ System beep completed');
+        }
+      });
+
+      // Fallback: close after 2 seconds
+      setTimeout(() => {
+        if (beepWindow && !beepWindow.isDestroyed()) {
+          beepWindow.close();
+        }
+      }, 2000);
+
     } catch (error) {
-      console.error('Failed to play system sound:', error);
+      // Ultimate fallback - ASCII bell
+      try {
+        process.stdout.write('\u0007');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Used ASCII bell as ultimate fallback');
+        }
+      } catch (e) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Even ASCII bell failed:', e);
+        }
+      }
     }
   }
 
@@ -347,7 +649,9 @@ class ReminderScheduler {
 
   // Load and schedule multiple reminders
   loadReminders(reminders) {
-    console.log(`Loading ${reminders.length} reminders`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Loading ${reminders.length} reminders`);
+    }
     
     // Clear existing tasks
     this.scheduledTasks.forEach((task, id) => {
@@ -379,11 +683,36 @@ class ReminderScheduler {
 
   // Clean up all scheduled tasks
   destroy() {
-    console.log('Destroying scheduler...');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Destroying scheduler...');
+    }
     this.scheduledTasks.forEach((task, id) => {
-      task.stop();
+      try {
+        task.stop();
+        task.destroy();
+      } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error(`Error stopping task ${id}:`, error);
+        }
+      }
     });
     this.scheduledTasks.clear();
+    
+    // Kill any lingering PowerShell processes on Windows
+    if (process.platform === 'win32') {
+      try {
+        // Don't wait for this to complete, just fire and forget
+        spawn('taskkill', ['/f', '/im', 'powershell.exe', '/fi', 'WINDOWTITLE eq Windows PowerShell'], { 
+          windowsHide: true,
+          detached: true,
+          stdio: 'ignore'
+        }).unref();
+      } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Error cleaning up PowerShell processes:', error);
+        }
+      }
+    }
   }
 }
 

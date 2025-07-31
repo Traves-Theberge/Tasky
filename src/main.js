@@ -1,27 +1,39 @@
+/**
+ * Tasky - Desktop Reminder Application
+ * 
+ * A tray-based reminder application with an animated desktop assistant.
+ * Features include recurring reminders, notification sounds, and a customizable
+ * desktop companion that delivers reminders with personality.
+ * 
+ * @author Tasky Team
+ * @version 1.0.0
+ * @license MIT
+ */
+
 const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, dialog } = require('electron');
 const path = require('path');
-const ReminderScheduler = require(path.join(process.cwd(), 'src', 'electron', 'scheduler'));
-const TaskyStore = require(path.join(process.cwd(), 'src', 'electron', 'storage'));
-const ClippyAssistant = require(path.join(process.cwd(), 'src', 'electron', 'assistant'));
+const ReminderScheduler = require(path.join(__dirname, 'scheduler'));
+const TaskyStore = require(path.join(__dirname, 'storage'));
+const ClippyAssistant = require(path.join(__dirname, 'assistant'));
 
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
-if (require('electron-squirrel-startup')) {
-  app.quit();
-}
 
-// Set AppUserModelID for Windows notifications
+// Set AppUserModelID for Windows notifications to ensure proper notification behavior
 if (process.platform === 'win32') {
   app.setAppUserModelId('com.tasky.reminderapp');
 }
 
-let mainWindow;
-let tray = null;
-let scheduler = null;
-let store = null;
-let assistant = null;
+// Global application state
+let mainWindow;        // Main settings/UI window
+let tray = null;       // System tray instance
+let scheduler = null;  // Reminder scheduling service
+let store = null;      // Persistent data storage service
+let assistant = null;  // Desktop companion/assistant
 
+/**
+ * Creates the main application window for settings and configuration.
+ * The window is initially hidden as this is primarily a tray application.
+ */
 const createWindow = () => {
-  // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 450,
     height: 650,
@@ -53,17 +65,77 @@ const createWindow = () => {
   mainWindow.setSkipTaskbar(false);
 
   // and load the index.html of the app.
-  // These constants are injected by Electron Forge Vite plugin
   if (typeof MAIN_WINDOW_VITE_DEV_SERVER_URL !== 'undefined' && MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
-    const rendererName = typeof MAIN_WINDOW_VITE_NAME !== 'undefined' ? MAIN_WINDOW_VITE_NAME : 'main_window';
-    const indexPath = path.join(__dirname, `../renderer/${rendererName}/index.html`);
-    console.log('Loading renderer from:', indexPath);
-    mainWindow.loadFile(indexPath);
+    // In production, determine the correct path based on whether we're packaged or not
+    let indexPath;
+    if (app.isPackaged) {
+      // Try multiple possible paths for packaged app
+      const possiblePaths = [
+        path.join(process.resourcesPath, 'app.asar', 'src', 'renderer', 'dist', 'index.html'),
+        path.join(app.getAppPath(), 'src', 'renderer', 'dist', 'index.html'),
+        path.join(__dirname, '..', '..', 'src', 'renderer', 'dist', 'index.html'),
+        path.join(process.resourcesPath, 'src', 'renderer', 'dist', 'index.html')
+      ];
+      
+      const fs = require('fs');
+      for (const testPath of possiblePaths) {
+        try {
+          if (fs.existsSync(testPath)) {
+            indexPath = testPath;
+            break;
+          }
+        } catch (err) {
+          // Continue to next path
+        }
+      }
+      
+      if (!indexPath) {
+        indexPath = possiblePaths[0]; // Use first as fallback
+      }
+    } else {
+      // In development/unpackaged, use the source directory
+      indexPath = path.join(process.cwd(), 'src/renderer/dist/index.html');
+    }
+    mainWindow.loadFile(indexPath).catch(err => {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to load renderer file:', err);
+        console.error('Attempted path:', indexPath);
+      }
+      
+      // Emergency fallback - load a basic HTML page
+      const fallbackHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Tasky - Loading Error</title>
+          <style>
+            body { 
+              font-family: Arial, sans-serif; 
+              padding: 20px; 
+              background: #333; 
+              color: white; 
+              text-align: center;
+            }
+            .error { color: #ff6b6b; }
+            .path { background: #444; padding: 10px; margin: 10px 0; border-radius: 5px; }
+          </style>
+        </head>
+        <body>
+          <h1>Tasky</h1>
+          <p class="error">Failed to load main interface</p>
+          <p>Attempted path:</p>
+          <div class="path">${indexPath}</div>
+          <p>Please check the console for more details.</p>
+        </body>
+        </html>
+      `;
+      mainWindow.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(fallbackHtml));
+    });
   }
 
-  // Open the DevTools in development
+  // Open DevTools only in development
   if (process.env.NODE_ENV === 'development') {
     mainWindow.webContents.openDevTools();
   }
@@ -85,10 +157,11 @@ app.whenReady().then(() => {
   if (process.platform === 'win32') {
     app.setAppUserModelId('com.tasky.reminderapp');
     
-    // Check and request notification permissions
+    // Check notification permissions
     const { Notification } = require('electron');
-    console.log('Notification support:', Notification.isSupported());
-    console.log('Requesting notification permissions...');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Notification support:', Notification.isSupported());
+    }
   }
   
   // Initialize storage
@@ -208,7 +281,10 @@ app.on('window-all-closed', (e) => {
   e.preventDefault();
 });
 
-// Function to create system tray
+/**
+ * Creates the system tray icon and context menu.
+ * Provides access to settings, notification toggle, and application exit.
+ */
 const createTray = () => {
   // Create a simple 16x16 reminder icon using data URL
   const iconDataURL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAGESURBVDiNpZM7SwNBFIWfgwQLwcJCG1sLwcJCG1sLG0uxsLG0sLGwsLGwsLBQsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsA==';
@@ -226,7 +302,9 @@ const createTray = () => {
   for (const testPath of possiblePaths) {
     if (require('fs').existsSync(testPath)) {
       iconPath = testPath;
-      console.log('Found tray icon at:', iconPath);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Found tray icon at:', iconPath);
+      }
       break;
     }
   }
@@ -241,7 +319,9 @@ const createTray = () => {
       throw new Error('No icon file found');
     }
   } catch (error) {
-    console.log('Using fallback icon data URL');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Using fallback icon data URL');
+    }
     // Use fallback data URL icon
     trayIcon = nativeImage.createFromDataURL(iconDataURL);
   }
@@ -272,7 +352,29 @@ const createTray = () => {
     {
       label: '❌ Exit',
       click: () => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Tray exit clicked, forcing app quit...');
+        }
         app.isQuiting = true;
+        
+        // Cleanup components first
+        if (assistant) {
+          assistant.destroy();
+        }
+        if (scheduler) {
+          scheduler.destroy();
+        }
+        
+        // Force quit after short delay to allow cleanup
+        setTimeout(() => {
+          if (process.platform === 'win32') {
+            // Force kill the process on Windows if app.quit() doesn't work
+            process.exit(0);
+          } else {
+            app.quit();
+          }
+        }, 500);
+        
         app.quit();
       }
     }
@@ -286,7 +388,9 @@ const createTray = () => {
   });
 };
 
-// Function to show settings window
+/**
+ * Shows the settings window. Creates it if it doesn't exist.
+ */
 const showSettingsWindow = () => {
   if (mainWindow) {
     mainWindow.show();
@@ -298,11 +402,30 @@ const showSettingsWindow = () => {
 
 // Cleanup when app is about to quit
 app.on('before-quit', () => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log('App is about to quit, cleaning up...');
+  }
   if (scheduler) {
     scheduler.destroy();
   }
   if (assistant) {
     assistant.destroy();
+  }
+});
+
+// Force quit all processes when app is quitting
+app.on('will-quit', (event) => {
+  // Kill any lingering child processes on Windows
+  if (process.platform === 'win32') {
+    const { spawn } = require('child_process');
+    try {
+      spawn('taskkill', ['/f', '/im', 'powershell.exe', '/fi', `PID ne ${process.pid}`], { windowsHide: true });
+    } catch (error) {
+      // Silently handle errors in production
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error killing child processes:', error);
+      }
+    }
   }
 });
 
@@ -425,6 +548,31 @@ ipcMain.on('close-window', () => {
   if (mainWindow) {
     mainWindow.hide();
   }
+});
+
+// Add a force quit handler
+ipcMain.on('force-quit', () => {
+  console.log('Force quit requested via IPC');
+  app.isQuiting = true;
+  
+  // Cleanup components
+  if (assistant) {
+    assistant.destroy();
+  }
+  if (scheduler) {
+    scheduler.destroy();
+  }
+  
+  // Force quit after cleanup
+  setTimeout(() => {
+    if (process.platform === 'win32') {
+      process.exit(0);
+    } else {
+      app.quit();
+    }
+  }, 500);
+  
+  app.quit();
 });
 
 ipcMain.on('minimize-window', () => {

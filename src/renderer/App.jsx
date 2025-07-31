@@ -31,6 +31,20 @@ const App = () => {
     // Load initial data when component mounts
     loadReminders();
     loadSettings();
+    
+    // Add keyboard shortcut for quitting (Ctrl+Q)
+    const handleKeyDown = (event) => {
+      if (event.ctrlKey && event.key === 'q') {
+        event.preventDefault();
+        window.electronAPI.forceQuit();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const loadReminders = async () => {
@@ -163,6 +177,10 @@ const App = () => {
     window.electronAPI.closeWindow();
   };
 
+  const handleForceQuit = () => {
+    window.electronAPI.forceQuit();
+  };
+
   const handleMinimizeApp = () => {
     window.electronAPI.minimizeWindow();
   };
@@ -191,8 +209,9 @@ const App = () => {
                 </button>
                 <button
                   onClick={handleCloseApp}
+                  onDoubleClick={handleForceQuit}
                   className="flex items-center justify-center w-12 h-8 hover:bg-red-600 hover:text-white transition-all duration-200 border-none outline-none"
-                  title="Close"
+                  title="Close (Double-click to quit app completely)"
                 >
                   <span className="text-muted-foreground hover:text-white text-sm font-bold">✕</span>
                 </button>
@@ -490,13 +509,20 @@ const SettingsTab = ({ settings, onSettingChange, onTestNotification }) => {
               />
             </SettingSection>
             
-            <div className="pt-6 border-t border-border/30">
+            <div className="pt-6 border-t border-border/30 space-y-4">
               <Button 
                 className="w-full bg-card hover:bg-secondary/90 text-card-foreground shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] rounded-2xl py-3 font-semibold"
                 onClick={onTestNotification}
               >
                 <Bell size={18} className="mr-3" />
                 Test Notification
+              </Button>
+              <Button 
+                className="w-full bg-red-600 hover:bg-red-700 text-white shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] rounded-2xl py-3 font-semibold"
+                onClick={() => window.electronAPI.forceQuit()}
+              >
+                <X size={18} className="mr-3" />
+                Quit Tasky
               </Button>
             </div>
           </CardContent>

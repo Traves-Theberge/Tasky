@@ -1,3 +1,11 @@
+/**
+ * ClippyAssistant - Desktop Companion for Tasky
+ * 
+ * Manages an animated desktop assistant that displays reminders and provides
+ * a friendly interface for the application. Supports multiple avatar types,
+ * customizable positioning, and interactive speech bubbles.
+ */
+
 const { BrowserWindow, screen } = require('electron');
 const path = require('path');
 
