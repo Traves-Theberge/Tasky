@@ -8,7 +8,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Checkbox } from '../components/ui/checkbox';
 import CustomSwitch from '../components/ui/CustomSwitch';
-import { Bell, Settings, Smile, X, Plus, Edit3, Trash2, Clock, Calendar } from 'lucide-react';
+import { Bell, Settings, Smile, X, Plus, Edit3, Trash2, Clock, Calendar, Minus, Paperclip } from 'lucide-react';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('reminders');
@@ -24,6 +24,7 @@ const App = () => {
     timeFormat: '24', // '12' or '24'
     enableDragging: true, // false = click-through, true = draggable
     assistantLayer: 'above', // 'above' = above windows, 'below' = below windows
+    bubbleSide: 'left', // 'left' or 'right' bubble position
   });
 
   useEffect(() => {
@@ -57,6 +58,7 @@ const App = () => {
       const timeFormat = await window.electronAPI.getSetting('timeFormat');
       const enableDragging = await window.electronAPI.getSetting('enableDragging');
       const assistantLayer = await window.electronAPI.getSetting('assistantLayer');
+      const bubbleSide = await window.electronAPI.getSetting('bubbleSide');
       
       setSettings({
         enableSound: enableSound !== undefined ? enableSound : true,
@@ -69,6 +71,7 @@ const App = () => {
         timeFormat: timeFormat !== undefined ? timeFormat : '24',
         enableDragging: enableDragging !== undefined ? enableDragging : true,
         assistantLayer: assistantLayer !== undefined ? assistantLayer : 'above',
+        bubbleSide: bubbleSide !== undefined ? bubbleSide : 'left',
       });
     } catch (error) {
       console.error('Failed to load settings:', error);
@@ -127,6 +130,10 @@ const App = () => {
     if (key === 'assistantLayer') {
       window.electronAPI.setAssistantLayer(value);
     }
+    
+    if (key === 'bubbleSide') {
+      window.electronAPI.setBubbleSide(value);
+    }
   };
 
   const handleTestNotification = () => {
@@ -156,6 +163,10 @@ const App = () => {
     window.electronAPI.closeWindow();
   };
 
+  const handleMinimizeApp = () => {
+    window.electronAPI.minimizeWindow();
+  };
+
   const tabs = [
     { id: 'reminders', label: 'Reminders', icon: Bell },
     { id: 'avatar', label: 'Avatar', icon: Smile },
@@ -172,8 +183,15 @@ const App = () => {
             <div className="flex justify-end items-center h-8 pr-0">
               <div className="flex items-center" style={{WebkitAppRegion: 'no-drag'}}>
                 <button
+                  onClick={handleMinimizeApp}
+                  className="flex items-center justify-center w-12 h-8 hover:bg-gray-600 hover:text-white transition-all duration-200 border-none outline-none"
+                  title="Minimize"
+                >
+                  <Minus size={14} className="text-muted-foreground hover:text-white" />
+                </button>
+                <button
                   onClick={handleCloseApp}
-                  className="flex items-center justify-center w-12 h-8 hover:bg-red-600 hover:text-white transition-all duration-200"
+                  className="flex items-center justify-center w-12 h-8 hover:bg-red-600 hover:text-white transition-all duration-200 border-none outline-none"
                   title="Close"
                 >
                   <span className="text-muted-foreground hover:text-white text-sm font-bold">✕</span>
@@ -435,6 +453,18 @@ const SettingsTab = ({ settings, onSettingChange, onTestNotification }) => {
                   { label: 'Below' }
                 ]}
               />
+              <SettingItem
+                icon="💬"
+                title="Notification Position"
+                description="Choose which side notification bubbles appear on"
+                type="switch"
+                value={settings.bubbleSide === 'right'}
+                onChange={(checked) => onSettingChange('bubbleSide', checked ? 'right' : 'left')}
+                options={[
+                  { label: 'Left' },
+                  { label: 'Right' }
+                ]}
+              />
             </SettingSection>
 
             <SettingSection title="System">
@@ -479,6 +509,7 @@ const SettingsTab = ({ settings, onSettingChange, onTestNotification }) => {
 // Avatar Tab Component
 const AvatarTab = ({ selectedAvatar, onAvatarChange }) => {
   const [customAvatars, setCustomAvatars] = useState([]);
+  const [avatarDataUrls, setAvatarDataUrls] = useState({});
 
   const defaultAvatars = [
     { name: 'Clippy', label: '📎 Clippy', description: 'The classic', type: 'default' },
@@ -506,6 +537,25 @@ const AvatarTab = ({ selectedAvatar, onAvatarChange }) => {
           description: avatar.description === 'Custom uploaded image' ? '' : (avatar.description || '')
         }));
         setCustomAvatars(cleanedAvatars);
+        
+        // Load data URLs for all custom avatars
+        const dataUrlPromises = cleanedAvatars.map(async (avatar) => {
+          if (avatar.filePath) {
+            const dataUrl = await window.electronAPI.getAvatarDataUrl(avatar.filePath);
+            return { name: avatar.name, dataUrl };
+          }
+          return { name: avatar.name, dataUrl: null };
+        });
+        
+        const dataUrlResults = await Promise.all(dataUrlPromises);
+        const newDataUrls = {};
+        dataUrlResults.forEach(result => {
+          if (result.dataUrl) {
+            newDataUrls[result.name] = result.dataUrl;
+          }
+        });
+        setAvatarDataUrls(newDataUrls);
+        
         // Save the cleaned version back to storage
         if (JSON.stringify(cleanedAvatars) !== JSON.stringify(savedCustomAvatars)) {
           window.electronAPI.setSetting('customAvatars', cleanedAvatars);
@@ -534,6 +584,15 @@ const AvatarTab = ({ selectedAvatar, onAvatarChange }) => {
         
         const updatedCustomAvatars = [...customAvatars, newCustomAvatar];
         setCustomAvatars(updatedCustomAvatars);
+        
+        // Load data URL for the new avatar
+        const dataUrl = await window.electronAPI.getAvatarDataUrl(filePath);
+        if (dataUrl) {
+          setAvatarDataUrls(prev => ({
+            ...prev,
+            [avatarName]: dataUrl
+          }));
+        }
         
         // Save custom avatars list
         window.electronAPI.setSetting('customAvatars', updatedCustomAvatars);
@@ -693,14 +752,7 @@ const AvatarTab = ({ selectedAvatar, onAvatarChange }) => {
                             selectedAvatar === avatar.name ? 'scale-110' : 'group-hover:scale-105'
                           }`}>
                             <img 
-                              src={(() => {
-                                // Convert Windows path to proper file URL
-                                let path = avatar.filePath.replace(/\\/g, '/');
-                                // Remove existing file:// protocol if present
-                                path = path.replace(/^file:\/\/\//, '');
-                                // Add file:// protocol for local files
-                                return `file:///${path}`;
-                              })()}
+                              src={avatarDataUrls[avatar.name] || ''}
                               alt={avatar.label}
                               className="w-12 h-12 object-cover rounded-lg"
                               onLoad={() => {
@@ -729,8 +781,8 @@ const AvatarTab = ({ selectedAvatar, onAvatarChange }) => {
                                 }
                               }}
                             />
-                            <div style={{display: 'none'}} className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-xs">
-                              Error
+                            <div style={{ display: 'none' }} className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center text-white text-lg font-bold">
+                              {avatar.label.charAt(0).toUpperCase()}
                             </div>
                             {selectedAvatar === avatar.name && (
                               <motion.div 

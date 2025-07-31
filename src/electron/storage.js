@@ -19,6 +19,7 @@ class TaskyStore {
           timeFormat: '24',
           enableDragging: true,
           assistantLayer: 'above',
+          bubbleSide: 'left',
           customAvatarPath: '',
           customAvatars: []
         },

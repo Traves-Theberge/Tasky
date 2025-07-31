@@ -1,3 +1,6 @@
 node_modules
 .vite
 .claude
+src/renderer/dist/index.html
+src/renderer/dist/assets/index-BQQ2XOf6.css
+src/renderer/dist/assets/index-QlqIPfR_.js

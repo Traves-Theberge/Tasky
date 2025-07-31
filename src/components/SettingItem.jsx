@@ -1,4 +1,3 @@
-import React from 'react';
 import CustomSwitch from './ui/CustomSwitch';
 import { Select, SelectItem } from './ui/select';
 

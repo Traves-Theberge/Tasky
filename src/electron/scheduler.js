@@ -111,58 +111,118 @@ class ReminderScheduler {
 
   // Trigger a reminder (show notification, play sound, etc.)
   triggerReminder(reminder) {
-    console.log('Triggering reminder:', reminder.message);
-    console.log('Using Clippy for all notifications');
+    console.log('Message:', reminder.message);
+    console.log('Notifications enabled:', this.notificationsEnabled);
+    
+    if (!this.notificationsEnabled) {
+      console.log('Notifications are disabled, skipping');
+      return;
+    }
     
     // Play sound if enabled
     if (this.soundEnabled) {
+      console.log('Playing notification sound');
       this.playNotificationSound();
     }
     
     // Emit event for other components
     if (global.mainWindow && global.mainWindow.webContents) {
+      console.log('Sending reminder-triggered event to main window');
       global.mainWindow.webContents.send('reminder-triggered', reminder);
     }
     
-    // Show assistant delivery if available (always show for notifications)
-    if (global.assistant) {
+    // Use Clippy for notifications if available, otherwise fall back to native notifications
+    if (global.assistant && global.assistant.isVisible) {
       console.log('Clippy delivering reminder notification:', reminder.message);
-      // Always show Clippy for notification delivery, regardless of notification type
       global.assistant.speak(reminder.message);
     } else {
-      console.log('Clippy desktop companion not available');
+      console.log('Clippy not available, showing native notification');
+      this.showNotification(reminder);
     }
+    
   }
 
   // Show native system notification
   showNotification(reminder) {
     try {
+      // Check if notifications are supported
+      if (!Notification.isSupported()) {
+        console.error('Native notifications are not supported on this system');
+        this.showFallbackNotification(reminder);
+        return;
+      }
+
+      console.log('Creating native notification...');
       const notification = new Notification({
         title: '📋 Tasky Reminder',
         body: reminder.message,
         urgency: 'normal',
         timeoutType: 'default',
-        actions: [
-          {
-            type: 'button',
-            text: 'Dismiss'
-          }
-        ]
+        silent: false,
+        icon: path.join(__dirname, '../assets/app-icon.png')
       });
 
+      console.log('Showing notification...');
       notification.show();
       
       notification.on('click', () => {
-        console.log('Notification clicked');
-        // You can add custom click behavior here
+        console.log('Notification clicked - bringing app to front');
+        if (global.mainWindow) {
+          global.mainWindow.show();
+          global.mainWindow.focus();
+        }
       });
 
-      notification.on('action', (event, index) => {
-        console.log('Notification action:', index);
+      notification.on('close', () => {
+        console.log('Notification closed');
       });
+
+      notification.on('failed', (error) => {
+        console.error('Notification failed:', error);
+        this.showFallbackNotification(reminder);
+      });
+
+      console.log('✅ Native notification created successfully');
 
     } catch (error) {
-      console.error('Failed to show notification:', error);
+      console.error('Failed to show native notification:', error);
+      this.showFallbackNotification(reminder);
+    }
+  }
+
+  // Fallback notification method using Windows toast or console  
+  showFallbackNotification(reminder) {
+    try {
+      if (process.platform === 'win32') {
+        console.log('Using Windows PowerShell BalloonTip as fallback');
+        const escapedMessage = reminder.message.replace(/'/g, "''").replace(/"/g, '""');
+        
+        // Use Windows system tray balloon notification
+        spawn('powershell', [
+          '-WindowStyle', 'Hidden',
+          '-Command',
+          `Add-Type -AssemblyName System.Windows.Forms; $balloon = New-Object System.Windows.Forms.NotifyIcon; $balloon.Icon = [System.Drawing.SystemIcons]::Information; $balloon.BalloonTipTitle = '📋 Tasky Reminder'; $balloon.BalloonTipText = '${escapedMessage}'; $balloon.Visible = $true; $balloon.ShowBalloonTip(5000); Start-Sleep -Seconds 6; $balloon.Dispose();`
+        ], { windowsHide: true })
+        .on('close', (code) => {
+          
+          if (code !== 0) {
+            // Try Windows 10/11 toast as secondary fallback
+            spawn('powershell', [
+              '-WindowStyle', 'Hidden', 
+              '-Command',
+              `[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null; try { $template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02); $toastXml = [xml] $template.GetXml(); $toastXml.GetElementsByTagName("text")[0].AppendChild($toastXml.CreateTextNode("📋 Tasky Reminder")) > $null; $toastXml.GetElementsByTagName("text")[1].AppendChild($toastXml.CreateTextNode("${escapedMessage}")) > $null; $toast = [Windows.UI.Notifications.ToastNotification]::new($toastXml); [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("Tasky").Show($toast); } catch { Write-Host "Toast failed" }`
+            ], { windowsHide: true })
+            .on('close', (toastCode) => {
+            });
+          }
+        });
+      } else {
+        console.log('Non-Windows platform, using console notification');
+        console.log(`🔔 REMINDER: ${reminder.message}`);
+      }
+    } catch (error) {
+      console.error('Fallback notification failed:', error);
+      console.log(`🔔 EMERGENCY REMINDER: ${reminder.message}`);
     }
   }
 
@@ -173,7 +233,6 @@ class ReminderScheduler {
       return;
     }
 
-    console.log('=== PLAYING NOTIFICATION SOUND ===');
     
     try {
       const fs = require('fs');
@@ -251,7 +310,6 @@ class ReminderScheduler {
           windowsHide: true 
         })
         .on('close', (code) => {
-          console.log(code === 0 ? '✓ System sound played' : '✗ System sound failed');
         });
       } else {
         // For other platforms, try system bell
@@ -272,11 +330,19 @@ class ReminderScheduler {
       days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
     };
     
-    console.log('=== TEST NOTIFICATION ===');
-    console.log('Current notification type setting:', this.notificationType);
-    console.log('Triggering test notification...');
+    console.log('Notifications enabled:', this.notificationsEnabled);
+    console.log('Sound enabled:', this.soundEnabled);
+    console.log('Global assistant available:', !!global.assistant);
+    console.log('Global mainWindow available:', !!global.mainWindow);
+    console.log('Test reminder object:', testReminder);
+    
+    if (!this.notificationsEnabled) {
+      console.log('⚠️ Test notification blocked - notifications are disabled in settings');
+      return;
+    }
+    
+    console.log('Calling triggerReminder with test data...');
     this.triggerReminder(testReminder);
-    console.log('=== END TEST ===');
   }
 
   // Load and schedule multiple reminders

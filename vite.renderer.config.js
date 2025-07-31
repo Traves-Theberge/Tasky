@@ -6,6 +6,11 @@ import { resolve } from 'path';
 export default defineConfig({
   plugins: [react()],
   root: resolve('src/renderer'),
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+    },
+  },
   build: {
     rollupOptions: {
       input: resolve('src/renderer/index.html')

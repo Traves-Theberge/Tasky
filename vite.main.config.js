@@ -24,9 +24,12 @@ export default defineConfig({
         'sound-play',
         'child_process',
         'path',
-        'fs',
-        /^\.\/electron\//
+        'fs'
       ],
+      output: {
+        inlineDynamicImports: false,
+        manualChunks: undefined,
+      }
     },
     emptyOutDir: false,
     brotliSize: false,

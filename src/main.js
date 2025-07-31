@@ -1,9 +1,8 @@
 const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, dialog } = require('electron');
 const path = require('path');
-const ReminderScheduler = require(path.join(process.cwd(), 'src', 'electron', 'scheduler'));
-const TaskyStore = require(path.join(process.cwd(), 'src', 'electron', 'storage'));
-const ClippyAssistant = require(path.join(process.cwd(), 'src', 'electron', 'assistant'));
-// const CustomNotificationWindow = require('./electron/customNotification'); // Removed - Clippy handles all notifications
+const ReminderScheduler = require(path.join(__dirname, 'electron', 'scheduler.js'));
+const TaskyStore = require(path.join(__dirname, 'electron', 'storage.js'));
+const ClippyAssistant = require(path.join(__dirname, 'electron', 'assistant.js'));
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
@@ -20,7 +19,6 @@ let tray = null;
 let scheduler = null;
 let store = null;
 let assistant = null;
-// let customNotifications = null; // Removed - Clippy handles all notifications
 
 const createWindow = () => {
   // Create the browser window.
@@ -38,7 +36,7 @@ const createWindow = () => {
       nodeIntegration: false,
       contextIsolation: true,
     },
-    icon: path.join(__dirname, '../assets/app-icon.png'),
+    icon: path.join(__dirname, 'assets', 'icon.ico'),
     show: false, // Don't show initially as this is a tray app
     skipTaskbar: false, // Show in taskbar when minimized
     alwaysOnTop: false, // Don't stay on top so it can be minimized properly
@@ -60,7 +58,9 @@ const createWindow = () => {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
     const rendererName = typeof MAIN_WINDOW_VITE_NAME !== 'undefined' ? MAIN_WINDOW_VITE_NAME : 'main_window';
-    mainWindow.loadFile(path.join(__dirname, `../renderer/${rendererName}/index.html`));
+    const indexPath = path.join(__dirname, '..', 'renderer', rendererName, 'index.html');
+    console.log('Loading renderer from:', indexPath);
+    mainWindow.loadFile(indexPath);
   }
 
   // Open the DevTools in development
@@ -81,11 +81,19 @@ const createWindow = () => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  // Request notification permissions for Windows
+  if (process.platform === 'win32') {
+    app.setAppUserModelId('com.tasky.reminderapp');
+    
+    // Check and request notification permissions
+    const { Notification } = require('electron');
+    console.log('Notification support:', Notification.isSupported());
+    console.log('Requesting notification permissions...');
+  }
+  
   // Initialize storage
   store = new TaskyStore();
   store.migrate(); // Run any necessary migrations
-  
-  // Custom notifications removed - Clippy handles all notifications
   
   // Initialize scheduler
   scheduler = new ReminderScheduler();
@@ -102,15 +110,12 @@ app.whenReady().then(() => {
   // If it's a custom avatar, set the custom path
   if (savedAvatar === 'Custom' || savedAvatar.startsWith('custom_')) {
     const customPath = settings.customAvatarPath;
-    console.log('Loading custom avatar at startup:', savedAvatar, 'path:', customPath);
     if (customPath) {
-      // Set custom avatar path after the assistant window is shown
       setTimeout(() => {
-        console.log('Setting custom avatar path on startup:', customPath);
         if (assistant && assistant.window) {
           assistant.setCustomAvatarPath(customPath);
         }
-      }, 3000); // Wait for assistant to be fully loaded
+      }, 3000);
     }
   }
   
@@ -118,9 +123,12 @@ app.whenReady().then(() => {
   const enableDragging = settings.enableDragging !== undefined ? settings.enableDragging : true;
   assistant.setDraggingMode(enableDragging);
   
+  // Apply bubble side setting
+  const bubbleSide = settings.bubbleSide || 'left';
+  assistant.setBubbleSide(bubbleSide);
+  
   // Apply layer setting - defer until window is created
   const assistantLayer = settings.assistantLayer || 'above';
-  console.log('Initial layer setting will be:', assistantLayer);
   
   // Apply animation setting
   const enableAnimation = settings.enableAnimation !== undefined ? settings.enableAnimation : true;
@@ -151,33 +159,22 @@ app.whenReady().then(() => {
   // Show desktop companion if enabled
   if (settings.enableAssistant) {
     setTimeout(() => {
-      console.log('Starting Clippy desktop companion...');
-      console.log('Assistant available:', !!assistant);
       try {
         if (assistant) {
-          console.log('Creating persistent desktop companion');
-          assistant.show(); // Show without message first
+          assistant.show();
           
-          // Apply layer setting after window is created and shown
           setTimeout(() => {
-            console.log('Applying layer setting after window creation:', assistantLayer);
             assistant.setLayer(assistantLayer);
           }, 1000);
           
-          // Welcome message after companion is positioned
           setTimeout(() => {
-            console.log('Sending welcome message to Clippy');
             assistant.speak("Hello! I'm your Tasky companion! I'll be here to deliver your reminders. 📋✨");
           }, 3000);
-        } else {
-          console.error('Assistant instance is null!');
         }
       } catch (error) {
         console.error('Error starting desktop companion:', error);
       }
     }, 2000); // Increased delay to ensure everything is loaded
-  } else {
-    console.log('Desktop companion disabled in settings');
   }
   
   createWindow();
@@ -220,9 +217,10 @@ const createTray = () => {
   // Try to load custom icon first, fallback to data URL
   // Try multiple possible paths for the tray icon
   const possiblePaths = [
-    path.join(__dirname, '../assets/tray-icon.png'),
-    path.join(__dirname, '../../src/assets/tray-icon.png'),
-    path.join(process.cwd(), 'src/assets/tray-icon.png')
+    path.join(__dirname, 'assets', 'tray-icon.png'),
+    path.join(__dirname, '..', 'assets', 'tray-icon.png'),
+    path.join(__dirname, '..', '..', 'src', 'assets', 'tray-icon.png'),
+    path.join(process.cwd(), 'src', 'assets', 'tray-icon.png')
   ];
   
   let iconPath = null;
@@ -273,17 +271,6 @@ const createTray = () => {
       type: 'separator'
     },
     {
-      label: '🔄 Test Notification',
-      click: () => {
-        if (scheduler) {
-          scheduler.testNotification();
-        }
-      }
-    },
-    {
-      type: 'separator'
-    },
-    {
       label: '❌ Exit',
       click: () => {
         app.isQuiting = true;
@@ -318,7 +305,6 @@ app.on('before-quit', () => {
   if (assistant) {
     assistant.destroy();
   }
-  // Custom notifications removed - Clippy handles all notifications
 });
 
 // IPC handlers for renderer communication
@@ -366,14 +352,15 @@ ipcMain.on('set-setting', (event, key, value) => {
           break;
         case 'enableAssistant':
           if (value && assistant) {
-            console.log('Enabling desktop companion');
-            assistant.show();
-            setTimeout(() => {
-              assistant.speak("I'm back! Ready to help with your reminders! 😊");
-            }, 1000);
-          } else if (assistant) {
-            console.log('Disabling desktop companion');
-            assistant.destroy();
+            if (!assistant.isVisible) {
+              assistant.show();
+              setTimeout(() => {
+                assistant.speak("I'm back! Ready to help with your reminders! 😊");
+              }, 1000);
+            }
+          } else if (assistant && assistant.window) {
+            assistant.window.hide();
+            assistant.isVisible = false;
           }
           break;
         case 'autoStart':
@@ -390,25 +377,26 @@ ipcMain.on('set-setting', (event, key, value) => {
           }
           break;
         case 'selectedAvatar':
-          console.log('Avatar setting changed to:', value);
           // Avatar change is handled by the change-avatar IPC call
           break;
         case 'enableAnimation':
-          console.log('Animation setting changed to:', value);
           if (assistant && assistant.window) {
             assistant.window.webContents.send('toggle-animation', value);
           }
           break;
         case 'assistantLayer':
-          console.log('Assistant layer setting changed to:', value);
           if (assistant) {
             assistant.setLayer(value);
           }
           break;
         case 'enableDragging':
-          console.log('Dragging setting changed to:', value);
           if (assistant) {
             assistant.setDraggingMode(value);
+          }
+          break;
+        case 'bubbleSide':
+          if (assistant) {
+            assistant.setBubbleSide(value);
           }
           break;
       }
@@ -417,11 +405,14 @@ ipcMain.on('set-setting', (event, key, value) => {
 });
 
 ipcMain.on('toggle-reminders', (event, enabled) => {
+  console.log('Toggle reminders called with:', enabled);
   if (scheduler) {
     scheduler.toggleNotifications(enabled);
+    console.log('Scheduler notifications set to:', enabled);
   }
   if (store) {
     store.setSetting('enableNotifications', enabled);
+    console.log('Settings saved: enableNotifications =', enabled);
   }
 });
 
@@ -438,23 +429,14 @@ ipcMain.on('close-window', () => {
 });
 
 ipcMain.on('minimize-window', () => {
-  console.log('=== MINIMIZE WINDOW ===');
-  console.log('MainWindow exists:', !!mainWindow);
   if (mainWindow) {
-    console.log('Window minimizable:', mainWindow.isMinimizable());
-    console.log('Window visible:', mainWindow.isVisible());
-    console.log('Skip taskbar:', mainWindow.isSkipTaskbar());
-    console.log('Calling minimize()');
     try {
-      // Ensure window shows in taskbar before minimizing
       mainWindow.setSkipTaskbar(false);
       mainWindow.minimize();
-      console.log('✅ Minimize successful');
     } catch (error) {
-      console.error('❌ Minimize failed:', error);
+      console.error('Minimize failed:', error);
     }
   }
-  console.log('=== END MINIMIZE ===');
 });
 
 ipcMain.on('show-assistant', (event, message) => {
@@ -470,14 +452,18 @@ ipcMain.on('hide-assistant', () => {
 });
 
 ipcMain.on('set-bubble-side', (event, side) => {
-  console.log('Setting Clippy bubble side to:', side);
+  console.log('Set bubble side called with:', side);
   if (assistant) {
     assistant.setBubbleSide(side);
+    console.log('Assistant bubble side set to:', side);
+  }
+  if (store) {
+    store.setSetting('bubbleSide', side);
+    console.log('Settings saved: bubbleSide =', side);
   }
 });
 
 ipcMain.on('change-avatar', (event, avatar) => {
-  console.log('Changing avatar to:', avatar);
   if (assistant) {
     // Simply change the avatar without destroying the assistant
     assistant.setAvatar(avatar);
@@ -485,26 +471,13 @@ ipcMain.on('change-avatar', (event, avatar) => {
     // If it's a custom avatar, also send the path immediately
     if (avatar === 'Custom' || avatar.startsWith('custom_')) {
       const customPath = store.getSetting('customAvatarPath');
-      console.log('=== CUSTOM AVATAR MAIN PROCESS ===');
-      console.log('Avatar name:', avatar);
-      console.log('Custom path from storage:', customPath);
-      console.log('Assistant exists:', !!assistant);
-      console.log('Assistant window exists:', !!(assistant && assistant.window));
-      
       if (customPath) {
-        // Set the custom avatar path after avatar change is processed
         setTimeout(() => {
           if (assistant && assistant.window) {
-            console.log('✅ Sending custom avatar path to assistant:', customPath);
             assistant.setCustomAvatarPath(customPath);
-          } else {
-            console.error('❌ Assistant or window not available for custom avatar');
           }
-        }, 1000); // Increased delay
-      } else {
-        console.error('❌ No custom avatar path found for avatar:', avatar);
+        }, 1000);
       }
-      console.log('=== END CUSTOM AVATAR MAIN ===');
     }
     
     // Send a message from the new avatar
@@ -519,23 +492,15 @@ ipcMain.on('change-avatar', (event, avatar) => {
 });
 
 ipcMain.on('toggle-assistant-dragging', (event, enabled) => {
-  console.log('Toggling assistant dragging:', enabled);
   if (assistant) {
     assistant.setDraggingMode(enabled);
   }
 });
 
 ipcMain.on('set-assistant-layer', (event, layer) => {
-  console.log('=== IPC SET ASSISTANT LAYER ===');
-  console.log('Received layer setting:', layer);
-  console.log('Assistant exists:', !!assistant);
   if (assistant) {
-    console.log('Calling assistant.setLayer with:', layer);
     assistant.setLayer(layer);
-  } else {
-    console.error('❌ Assistant not available for layer setting');
   }
-  console.log('=== END IPC SET ASSISTANT LAYER ===');
 });
 
 ipcMain.handle('select-avatar-file', async () => {
@@ -552,7 +517,6 @@ ipcMain.handle('select-avatar-file', async () => {
   }
 
   const filePath = result.filePaths[0];
-  console.log('Selected avatar file:', filePath);
   
   // Test if file exists
   const fs = require('fs');
@@ -563,6 +527,47 @@ ipcMain.handle('select-avatar-file', async () => {
   }
 
   return filePath;
+});
+
+ipcMain.handle('get-avatar-data-url', async (event, filePath) => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    
+    if (!fs.existsSync(filePath)) {
+      throw new Error('File does not exist');
+    }
+    
+    const imageBuffer = fs.readFileSync(filePath);
+    const extname = path.extname(filePath).toLowerCase();
+    
+    // Determine MIME type
+    let mimeType = 'image/png'; // default
+    switch (extname) {
+      case '.jpg':
+      case '.jpeg':
+        mimeType = 'image/jpeg';
+        break;
+      case '.png':
+        mimeType = 'image/png';
+        break;
+      case '.gif':
+        mimeType = 'image/gif';
+        break;
+      case '.bmp':
+        mimeType = 'image/bmp';
+        break;
+      case '.webp':
+        mimeType = 'image/webp';
+        break;
+    }
+    
+    const base64Image = imageBuffer.toString('base64');
+    return `data:${mimeType};base64,${base64Image}`;
+  } catch (error) {
+    console.error('Error reading avatar file:', error);
+    return null;
+  }
 });
 
 ipcMain.on('get-upcoming-notifications', (event) => {

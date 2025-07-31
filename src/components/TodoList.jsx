@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { Checkbox } from "./ui/checkbox";
 
 export default function TodoList() {
   const [todos, setTodos] = useState([
@@ -48,7 +48,7 @@ export default function TodoList() {
           key={idx}
         >
 <label className="flex items-center flex-1 cursor-pointer">
-<Switch
+<Checkbox
   checked={todo.completed}
   onCheckedChange={() => toggleTodo(idx)}
   aria-label={`Mark task ${idx + 1} as complete`}

@@ -25,6 +25,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   changeAvatar: (avatar) => ipcRenderer.send('change-avatar', avatar),
   setBubbleSide: (side) => ipcRenderer.send('set-bubble-side', side),
   selectAvatarFile: () => ipcRenderer.invoke('select-avatar-file'),
+  getAvatarDataUrl: (filePath) => ipcRenderer.invoke('get-avatar-data-url', filePath),
   
   // Window controls
   closeWindow: () => ipcRenderer.send('close-window'),
