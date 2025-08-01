@@ -253,7 +253,7 @@ app.whenReady().then(() => {
           }, 1000);
           
           setTimeout(() => {
-            assistant.speak("Hello! I'm your Tasky companion! I'll be here to deliver your reminders. 📋✨");
+            assistant.speak("Hello! I'm Tasky your reminder companion! 📋✨");
           }, 3000);
         }
       } catch (error) {

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import data from '@emoji-mart/data';
+import Picker from '@emoji-mart/react';
 import { SettingSection } from '../components/SettingSection';
 import { SettingItem } from '../components/SettingItem';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -103,7 +105,8 @@ const RemindersTab = ({ reminders, onAddReminder, onRemoveReminder, onEditRemind
 const SettingsTab = ({ settings, onSettingChange, onTestNotification }) => {
   return (
     <div className="space-y-8 h-full">
-      <Card className="bg-card border-border/30 shadow-2xl card rounded-3xl backdrop-blur-sm">
+      <div className="pb-6">
+        <Card className="bg-card border-border/30 shadow-2xl card rounded-3xl backdrop-blur-sm">
         <CardHeader className="pb-6 px-8 pt-6">
           <CardTitle className="flex items-center gap-3 text-xl font-bold text-card-foreground">
             <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-primary/10">
@@ -239,7 +242,8 @@ const SettingsTab = ({ settings, onSettingChange, onTestNotification }) => {
             </Button>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 };
@@ -367,8 +371,8 @@ const AvatarTab = ({ selectedAvatar, onAvatarChange }) => {
 
   return (
     <div className="space-y-8 h-full">
-      
-      <Card className="bg-card border-border/30 shadow-2xl card rounded-3xl backdrop-blur-sm">
+      <div className="pb-6">
+        <Card className="bg-card border-border/30 shadow-2xl card rounded-3xl backdrop-blur-sm">
         <CardHeader className="pb-6 px-8 pt-6">
           <CardTitle className="flex items-center gap-3 text-xl font-bold text-card-foreground">
             <div className="flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-400/10">
@@ -550,7 +554,8 @@ const AvatarTab = ({ selectedAvatar, onAvatarChange }) => {
             </div>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 };
@@ -558,6 +563,7 @@ const AvatarTab = ({ selectedAvatar, onAvatarChange }) => {
 const ReminderForm = ({ onAddReminder, onEditReminder, editingReminder, onCancelEdit, timeFormat }) => {
   const [message, setMessage] = useState('');
   const [time, setTime] = useState('09:00');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [days, setDays] = useState({
     monday: true,
     tuesday: true,
@@ -645,6 +651,25 @@ const ReminderForm = ({ onAddReminder, onEditReminder, editingReminder, onCancel
     setDays({ ...days, [day]: !days[day] });
   };
 
+  const handleEmojiSelect = (emoji) => {
+    setMessage(prev => prev + emoji.native);
+    setShowEmojiPicker(false);
+  };
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showEmojiPicker && !event.target.closest('.emoji-picker-container')) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showEmojiPicker]);
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {editingReminder && (
@@ -674,19 +699,50 @@ const ReminderForm = ({ onAddReminder, onEditReminder, editingReminder, onCancel
         <Label htmlFor="message" className="text-sm font-medium text-card-foreground flex items-center gap-2">
           Reminder Message
         </Label>
-        <input
-          id="message"
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="e.g., Time to stand up and stretch!"
-          maxLength={100}
-          className="w-full bg-card text-card-foreground border border-border/30 rounded-xl px-4 py-3 text-base font-medium focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all duration-300 shadow-lg hover:shadow-xl placeholder:text-muted-foreground"
-          style={{
-            backgroundColor: '#464647',
-            color: '#ffffff'
-          }}
-        />
+        <div className="relative emoji-picker-container">
+          <input
+            id="message"
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="e.g., Time to stand up and stretch!"
+            maxLength={100}
+            className="w-full bg-card text-card-foreground border border-border/30 rounded-xl px-4 py-3 pr-12 text-base font-medium focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all duration-300 shadow-lg hover:shadow-xl placeholder:text-muted-foreground"
+            style={{
+              backgroundColor: '#464647',
+              color: '#ffffff'
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xl hover:scale-110 transition-transform duration-200 focus:outline-none"
+            aria-label="Add emoji"
+          >
+            😊
+          </button>
+          
+          {showEmojiPicker && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="absolute right-0 top-full mt-2 shadow-xl z-50"
+            >
+              <Picker
+                data={data}
+                onEmojiSelect={handleEmojiSelect}
+                theme="dark"
+                set="native"
+                showPreview={false}
+                showSkinTones={false}
+                emojiSize={20}
+                perLine={8}
+                maxFrequentRows={2}
+              />
+            </motion.div>
+          )}
+        </div>
         <div className="text-xs text-muted-foreground text-right">
           {message.length}/100 characters
         </div>

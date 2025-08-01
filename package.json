@@ -9,6 +9,9 @@
     "start": "npm run clean && npm run build-renderer && npm run build-electron && electron .",
     "build": "npm run clean && npm run build-renderer && npm run build-electron",
     "dist": "npm run build && npx electron-builder",
+    "dist:mac": "npm run build && npx electron-builder --mac",
+    "dist:win": "npm run build && npx electron-builder --win",
+    "dist:linux": "npm run build && npx electron-builder --linux",
     "pack": "npx electron-builder --dir",
     "lint": "eslint --ext .ts,.tsx .",
     "dev": "npm run build-electron && electron .",
@@ -37,28 +40,6 @@
     "type": "git",
     "url": "https://github.com/tasky"
   },
-  "build": {
-    "appId": "com.tasky.reminderapp",
-    "productName": "Tasky",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      ".vite/build/**/*",
-      "dist/**/*",
-      "node_modules/**/*",
-      "src/assets/**/*",
-      "src/renderer/dist/**/*"
-    ],
-    "win": {
-      "icon": "src/assets/icon.ico",
-      "target": "nsis"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
-    }
-  },
   "devDependencies": {
     "@electron-forge/cli": "^7.8.1",
     "@electron-forge/maker-deb": "^7.4.0",
@@ -81,6 +62,8 @@
     "wait-on": "^8.0.4"
   },
   "dependencies": {
+    "@emoji-mart/data": "^1.2.1",
+    "@emoji-mart/react": "^1.1.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "electron-store": "^8.1.0",
@@ -90,5 +73,71 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^3.3.1"
+  },
+  "build": {
+    "appId": "com.tasky.reminderapp",
+    "productName": "Tasky",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      ".vite/build/**/*",
+      "src/renderer/dist/**/*",
+      "src/assets/**/*",
+      "node_modules/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "src/assets/icon.icns",
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ],
+      "icon": "src/assets/icon.ico"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "src/assets/icon.png",
+      "category": "Office"
+    }
   }
 }
