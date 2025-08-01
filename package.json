@@ -1,7 +1,7 @@
 {
   "name": "tasky",
   "version": "1.0.0",
-  "description": "A cross-platform desktop reminder application with animated assistant companion. Features recurring reminders, notification sounds, and customizable desktop companion.",
+  "description": "A cross-platform desktop reminder application with animated assistant companion. Features recurring reminders, notification sounds, and customizable desktop companion. Note: Includes fan art tribute characters for educational purposes.",
   "main": ".vite/build/main.js",
   "homepage": "./",
   "scripts": {

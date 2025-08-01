@@ -70,6 +70,9 @@ ipcRenderer.on('clippy-speak', (event, message) => {
 ipcRenderer.on('clippy-change-avatar', (event, avatarName) => {
   if (character) {
     // Update the avatar display based on the name
+    // DISCLAIMER: The 'Clippy' character is a fan art tribute to Microsoft's Office Assistant.
+    // This is an educational/personal project not affiliated with Microsoft Corporation.
+    // All trademarks are property of their respective owners.
     const avatars = {
       'Clippy': '📎',
       'Merlin': '🧙‍♂️',

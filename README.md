@@ -172,6 +172,20 @@ npm run dist
 
 ---
 
-**Made with ❤️ by the Traves Theberge**
+## Disclaimer 📄
+
+**Clippy Character Notice**: This project includes a "Clippy" character option as part of its desktop assistant feature. This is a fan art/tribute project created for educational and personal use purposes. The Clippy character and any associated trademarks are the property of Microsoft Corporation. This project is not affiliated with, endorsed by, or sponsored by Microsoft Corporation.
+
+The Clippy assistant implementation in this project is:
+- A creative interpretation and homage to the original Microsoft Office Assistant
+- Developed independently for learning and demonstration purposes
+- Not intended for commercial use or distribution
+- Part of a broader desktop assistant system with multiple character options
+
+If you represent Microsoft Corporation and have concerns about this implementation, please contact the project maintainer.
+
+---
+
+**Made with ❤️ by Traves Theberge**
 
 Stay organized, stay productive! 🚀
