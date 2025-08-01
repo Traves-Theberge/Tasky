@@ -2,9 +2,7 @@
 
 ![Tasky Banner](tasky-banner.png)
 
-A modern desktop reminder application with an animated assistant companion. Tasky helps you stay organized with customizable recurring reminders, notification sounds, and a friendly desktop companion that delivers your reminders with personality.
-
-![Tasky Screenshot](screenshot.png)
+A desktop reminder application with an animated assistant companion. Tasky helps you stay organized with customizable recurring reminders, notification sounds, and a friendly desktop companion that delivers your reminders with personality.
 
 ## Features ✨
 
@@ -172,68 +170,8 @@ npm run dist
 # - Linux: .AppImage and .deb packages
 ```
 
-## Troubleshooting 🔧
-
-### Common Issues
-
-**Notifications not appearing:**
-- Check if notifications are enabled in your system settings
-- Ensure Tasky has notification permissions
-- Try the "Test Notification" button in settings
-
-**Sound not playing:**
-- Verify that sound is enabled in Tasky settings
-- Check your system volume and audio output
-- Make sure the notification.mp3 file is present in the assets folder
-
-**Assistant not showing:**
-- Enable the assistant in the Assistant tab
-- Check if the assistant layer is set correctly
-- Try different avatar options if custom avatar fails to load
-
-**Auto-start not working:**
-- Ensure auto-start is enabled in settings
-- Check your system's startup programs list
-- Run the application as administrator once (Windows)
-
-### Logs and Debugging
-Development logs are available in the console when running `npm run dev`. For production builds, logs are minimal to improve performance.
-
-## Contributing 🤝
-
-We welcome contributions to Tasky! Please follow these guidelines:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Guidelines
-- Follow the existing code style and structure
-- Add comments for complex functionality
-- Test on multiple platforms when possible
-- Update documentation for new features
-
-## License 📄
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments 🙏
-
-- Inspired by classic desktop assistants like Microsoft Clippy
-- Built with modern web technologies and Electron
-- Thanks to the open-source community for the amazing tools and libraries
-
-## Support 💬
-
-If you encounter any issues or have questions:
-1. Check the troubleshooting section above
-2. Search existing [Issues](https://github.com/your-repo/tasky/issues)
-3. Create a new issue with detailed information about your problem
-
 ---
 
-**Made with ❤️ by the Tasky Team**
+**Made with ❤️ by the Traves Theberge**
 
 Stay organized, stay productive! 🚀
