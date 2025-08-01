@@ -29,7 +29,7 @@ class ClippyAssistant {
 
 
     this.window = new BrowserWindow({
-      width: 600, // Wider to accommodate speech bubbles
+      width: 800, // Increased to accommodate larger speech bubbles
       height: 200,
       frame: false,
       transparent: true,
@@ -169,9 +169,11 @@ class ClippyAssistant {
       padding: 12px 16px;
       border-radius: 20px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-      max-width: 250px;
+      max-width: 350px;
       min-width: 180px;
       word-wrap: break-word;
+      word-break: break-word;
+      overflow-wrap: break-word;
       font-size: 14px;
       font-weight: 500;
       top: 50%;
@@ -180,7 +182,7 @@ class ClippyAssistant {
       transition: all 0.3s ease;
       z-index: 1000;
       pointer-events: none;
-      white-space: pre-wrap;
+      white-space: normal;
       line-height: 1.4;
       -webkit-app-region: no-drag;
       -webkit-user-select: none;
@@ -215,14 +217,13 @@ class ClippyAssistant {
       this.create();
     }
 
-    // Position in bottom-right corner as persistent desktop companion
+    // Position in center of screen as desktop companion
     const primaryDisplay = screen.getPrimaryDisplay();
     const { width, height } = primaryDisplay.workAreaSize;
     
-    // Position in bottom-right corner with small margin
-    // Clippy is centered in a 600px wide window, so we need more margin
-    const xPos = width - 620;  // 600px width + 20px margin
-    const yPos = height - 220; // 200px height + 20px margin
+    // Center the window on screen
+    const xPos = Math.round((width - 800) / 2);   // Center horizontally (800px window width)
+    const yPos = Math.round((height - 200) / 2);  // Center vertically (200px window height)
     
     this.window.setPosition(xPos, yPos);
     this.window.show();

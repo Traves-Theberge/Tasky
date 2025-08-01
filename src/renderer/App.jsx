@@ -700,14 +700,14 @@ const ReminderForm = ({ onAddReminder, onEditReminder, editingReminder, onCancel
           Reminder Message
         </Label>
         <div className="relative emoji-picker-container">
-          <input
+          <textarea
             id="message"
-            type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="e.g., Time to stand up and stretch!"
             maxLength={100}
-            className="w-full bg-card text-card-foreground border border-border/30 rounded-xl px-4 py-3 pr-12 text-base font-medium focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all duration-300 shadow-lg hover:shadow-xl placeholder:text-muted-foreground"
+            rows={2}
+            className="w-full bg-card text-card-foreground border border-border/30 rounded-xl px-4 py-3 pr-12 text-base font-medium focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all duration-300 shadow-lg hover:shadow-xl placeholder:text-muted-foreground resize-none break-words whitespace-normal"
             style={{
               backgroundColor: '#464647',
               color: '#ffffff'
@@ -716,7 +716,7 @@ const ReminderForm = ({ onAddReminder, onEditReminder, editingReminder, onCancel
           <button
             type="button"
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xl hover:scale-110 transition-transform duration-200 focus:outline-none"
+            className="absolute right-3 top-4 text-xl hover:scale-110 transition-transform duration-200 focus:outline-none"
             aria-label="Add emoji"
           >
             😊
@@ -948,7 +948,7 @@ const ReminderItem = ({ reminder, onRemove, onEdit, onToggle, timeFormat }) => {
     <div className={`bg-secondary/30 border-2 border-border/40 rounded-lg p-4 space-y-3 transition-opacity duration-200 hover:bg-secondary/40 hover:border-border/60 ${!isEnabled ? 'opacity-60' : ''}`}>
       {/* Reminder message and toggle */}
       <div className="flex items-start justify-between gap-4">
-        <h3 className={`font-medium text-base flex-1 min-w-0 ${isEnabled ? 'text-foreground' : 'text-muted-foreground'}`}>
+        <h3 className={`font-medium text-base flex-1 break-all leading-relaxed ${isEnabled ? 'text-foreground' : 'text-muted-foreground'}`} style={{wordBreak: 'break-word', overflowWrap: 'anywhere'}}>
           {reminder.message}
         </h3>
         <Checkbox

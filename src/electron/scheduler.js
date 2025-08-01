@@ -246,6 +246,7 @@ class ReminderScheduler {
 
   // Play notification sound
   playNotificationSound() {
+    console.log('playNotificationSound called, soundEnabled:', this.soundEnabled);
     if (!this.soundEnabled) {
       console.log('Sound is disabled, skipping');
       return;
@@ -272,13 +273,15 @@ class ReminderScheduler {
       
       let customSoundPath = null;
       
+      console.log('Checking for notification.mp3 in paths...');
       for (const testPath of possiblePaths) {
+        console.log('Testing path:', testPath);
         if (fs.existsSync(testPath)) {
           customSoundPath = testPath;
-          if (process.env.NODE_ENV === 'development') {
-            console.log('✓ Found notification sound at:', customSoundPath);
-          }
+          console.log('✓ Found notification sound at:', customSoundPath);
           break;
+        } else {
+          console.log('✗ Path not found:', testPath);
         }
       }
       

@@ -29,8 +29,13 @@ ipcRenderer.on('clippy-speak', (event, message) => {
     bubble.style.zIndex = '1000';
     bubble.style.opacity = '1';
     bubble.style.display = 'block';
-    bubble.style.maxWidth = '250px';
     bubble.style.fontSize = '14px';
+    bubble.style.wordWrap = 'break-word';
+    bubble.style.wordBreak = 'break-word';
+    bubble.style.overflowWrap = 'break-word';
+    bubble.style.whiteSpace = 'normal';
+    bubble.style.width = 'auto';
+    bubble.style.minWidth = '180px';
     
     // Apply custom font
     if (notificationFont === 'system') {
@@ -40,12 +45,18 @@ ipcRenderer.on('clippy-speak', (event, message) => {
     }
     
     // Position bubble based on bubbleSide setting
+    // Window: 800px wide, Avatar container spans 200px-400px
     if (bubbleSide === 'right') {
-      bubble.style.left = '350px';
+      // Position bubble to the right of avatar
+      bubble.style.left = '420px';  // Start 20px after avatar ends (400px + 20px)
       bubble.style.right = 'auto';
+      bubble.style.maxWidth = '350px'; // Full width for right side
     } else {
-      bubble.style.right = '350px';
-      bubble.style.left = 'auto';
+      // Position bubble to the left of avatar  
+      // Avatar starts at 200px, so bubble should end before that with gap
+      bubble.style.left = '20px';   // Start from left edge with margin
+      bubble.style.right = 'auto';
+      bubble.style.maxWidth = '160px'; // Constrain width to fit (200px - 20px start - 20px gap = 160px)
     }
     
     bubble.textContent = message;
