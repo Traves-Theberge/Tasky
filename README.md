@@ -1,6 +1,8 @@
 ![Tasky Banner](tasky-banner.png)
 
-A desktop reminder application with an animated assistant companion. Tasky helps you stay organized with customizable recurring reminders, notification sounds, and a friendly desktop companion that delivers your reminders with personality.
+Tasky Your Desktop Reminder Companion 
+
+An electron desktop application with an animated assistant companion. Tasky helps you stay organized with customizable recurring reminders, notification sounds, and a friendly desktop companion that delivers your reminders with personality.
 
 ## Features ✨
 
