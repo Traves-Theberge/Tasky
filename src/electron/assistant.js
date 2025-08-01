@@ -17,6 +17,9 @@ class ClippyAssistant {
     this.isDelivering = false; // Track if currently delivering notification
     this.selectedAvatar = 'Clippy'; // Default avatar
     this.bubbleSide = 'left'; // Default bubble side
+    this.notificationColor = '#7f7f7c'; // Default notification color
+    this.notificationFont = 'system'; // Default notification font
+    this.notificationTextColor = '#ffffff'; // Default notification text color
   }
 
   create() {
@@ -78,6 +81,11 @@ class ClippyAssistant {
         
         // Send initial bubble side setting
         this.window.webContents.send('clippy-set-bubble-side', this.bubbleSide);
+        
+        // Send initial notification settings
+        this.window.webContents.send('clippy-set-notification-color', this.notificationColor);
+        this.window.webContents.send('clippy-set-notification-font', this.notificationFont);
+        this.window.webContents.send('clippy-set-notification-text-color', this.notificationTextColor);
         
       }, 100);
     });
@@ -304,6 +312,36 @@ class ClippyAssistant {
     // Send to window if it exists (whether visible or not)
     if (this.window && this.window.webContents && !this.window.webContents.isDestroyed()) {
       this.window.webContents.send('clippy-set-bubble-side', side);
+    }
+  }
+
+  setNotificationColor(color) {
+    // Store the notification color preference
+    this.notificationColor = color;
+    
+    // Send to window if it exists (whether visible or not)
+    if (this.window && this.window.webContents && !this.window.webContents.isDestroyed()) {
+      this.window.webContents.send('clippy-set-notification-color', color);
+    }
+  }
+
+  setNotificationFont(font) {
+    // Store the notification font preference
+    this.notificationFont = font;
+    
+    // Send to window if it exists (whether visible or not)
+    if (this.window && this.window.webContents && !this.window.webContents.isDestroyed()) {
+      this.window.webContents.send('clippy-set-notification-font', font);
+    }
+  }
+
+  setNotificationTextColor(color) {
+    // Store the notification text color preference
+    this.notificationTextColor = color;
+    
+    // Send to window if it exists (whether visible or not)
+    if (this.window && this.window.webContents && !this.window.webContents.isDestroyed()) {
+      this.window.webContents.send('clippy-set-notification-text-color', color);
     }
   }
 

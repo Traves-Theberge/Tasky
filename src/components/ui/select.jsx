@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 
-export function Select({ value, onValueChange, children, ...props }) {
+export function Select({ value, onValueChange, children, style, ...props }) {
   return (
     <select 
-      className="border border-border/30 rounded-2xl px-4 py-3 text-card-foreground focus:ring-2 focus:ring-green-500/20 focus:border-green-500 shadow-lg hover:shadow-xl transition-all duration-300 font-medium"
-      style={{ backgroundColor: '#7f7f7c' }}
+      className="border border-border/30 rounded-2xl px-4 py-2.5 text-card-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-lg hover:shadow-xl transition-all duration-300 font-medium bg-card/50 backdrop-blur-sm hover:bg-card/70 cursor-pointer min-w-[160px]"
       value={value}
       onChange={(e) => onValueChange && onValueChange(e.target.value)}
+      style={style}
       {...props}
     >
       {children}
@@ -30,9 +30,9 @@ export function SelectContent({ children, className = "", ...props }) {
   );
 }
 
-export function SelectItem({ children, value, ...props }) {
+export function SelectItem({ children, value, style, ...props }) {
   return (
-    <option value={value} {...props}>
+    <option value={value} style={style} {...props}>
       {children}
     </option>
   );

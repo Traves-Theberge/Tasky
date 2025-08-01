@@ -200,6 +200,18 @@ app.whenReady().then(() => {
   const bubbleSide = settings.bubbleSide || 'left';
   assistant.setBubbleSide(bubbleSide);
   
+  // Apply notification color setting
+  const notificationColor = settings.notificationColor || '#7f7f7c';
+  assistant.setNotificationColor(notificationColor);
+  
+  // Apply notification font setting
+  const notificationFont = settings.notificationFont || 'system';
+  assistant.setNotificationFont(notificationFont);
+  
+  // Apply notification text color setting
+  const notificationTextColor = settings.notificationTextColor || '#ffffff';
+  assistant.setNotificationTextColor(notificationTextColor);
+  
   // Apply layer setting - defer until window is created
   const assistantLayer = settings.assistantLayer || 'above';
   
@@ -519,6 +531,21 @@ ipcMain.on('set-setting', (event, key, value) => {
         case 'bubbleSide':
           if (assistant) {
             assistant.setBubbleSide(value);
+          }
+          break;
+        case 'notificationColor':
+          if (assistant) {
+            assistant.setNotificationColor(value);
+          }
+          break;
+        case 'notificationFont':
+          if (assistant) {
+            assistant.setNotificationFont(value);
+          }
+          break;
+        case 'notificationTextColor':
+          if (assistant) {
+            assistant.setNotificationTextColor(value);
           }
           break;
       }

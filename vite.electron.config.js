@@ -6,8 +6,6 @@ export default defineConfig({
   build: {
     lib: {
       entry: {
-        main: 'src/main.js',
-        preload: 'src/preload.js',
         scheduler: 'src/electron/scheduler.js',
         storage: 'src/electron/storage.js',
         assistant: 'src/electron/assistant.js',

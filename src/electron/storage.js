@@ -21,7 +21,10 @@ class TaskyStore {
           assistantLayer: 'above',
           bubbleSide: 'left',
           customAvatarPath: '',
-          customAvatars: []
+          customAvatars: [],
+          notificationColor: '#7f7f7c',
+          notificationFont: 'system',
+          notificationTextColor: '#ffffff'
         },
         version: '2.0.0'
       }

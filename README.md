@@ -1,5 +1,7 @@
 # Tasky 📋
 
+![Tasky Banner](tasky-banner.png)
+
 A modern desktop reminder application with an animated assistant companion. Tasky helps you stay organized with customizable recurring reminders, notification sounds, and a friendly desktop companion that delivers your reminders with personality.
 
 ![Tasky Screenshot](screenshot.png)
@@ -22,9 +24,11 @@ A modern desktop reminder application with an animated assistant companion. Task
 
 ### Customization
 - **Multiple Themes**: Light and dark mode support
+- **Notification Appearance**: Customize notification colors, fonts, and text colors
 - **Flexible Settings**: Configure notifications, sounds, and assistant behavior
 - **Bubble Positioning**: Choose left or right side speech bubbles
 - **Animation Controls**: Enable or disable assistant animations
+- **Font Selection**: Choose from 9 different fonts for notifications with live preview
 
 ## Installation 🚀
 
@@ -76,6 +80,14 @@ npm run dist
 4. Adjust positioning, animation, and speech bubble settings
 5. Toggle dragging mode to move your assistant around the desktop
 
+### Customizing Notifications
+1. Go to the "Settings" tab
+2. Under "Notifications & Alerts":
+   - **Notification Color**: Choose background color for popup bubbles
+   - **Notification Font**: Select from 9 fonts with live preview
+   - **Notification Text Color**: Set text color for optimal readability
+3. Test your changes with the "Test Notification" button
+
 ### System Tray Features
 - **Left-click/Double-click**: Open settings window
 - **Right-click**: Access context menu with quick toggles
@@ -100,7 +112,10 @@ Tasky stores its configuration in the following locations:
   "enableAnimation": true,
   "assistantLayer": "above",
   "bubbleSide": "left",
-  "enableDragging": true
+  "enableDragging": true,
+  "notificationColor": "#7f7f7c",
+  "notificationFont": "system",
+  "notificationTextColor": "#ffffff"
 }
 ```
 

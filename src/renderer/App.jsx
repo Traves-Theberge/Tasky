@@ -130,6 +130,41 @@ const SettingsTab = ({ settings, onSettingChange, onTestNotification }) => {
               value={settings.enableSound}
               onChange={(checked) => onSettingChange('enableSound', checked)}
             />
+            <SettingItem
+              icon="🎨"
+              title="Notification Color"
+              description="Choose the background color for popup notifications"
+              type="color"
+              value={settings.notificationColor || '#7f7f7c'}
+              onChange={(color) => onSettingChange('notificationColor', color)}
+            />
+            <SettingItem
+              icon="🔤"
+              title="Notification Font"
+              description="Select the font family for notification text"
+              type="select"
+              value={settings.notificationFont || 'system'}
+              options={[
+                { value: 'system', label: 'System Default', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' },
+                { value: 'Arial', label: 'Arial', fontFamily: 'Arial, sans-serif' },
+                { value: 'Times New Roman', label: 'Times New Roman', fontFamily: '"Times New Roman", serif' },
+                { value: 'Georgia', label: 'Georgia', fontFamily: 'Georgia, serif' },
+                { value: 'Verdana', label: 'Verdana', fontFamily: 'Verdana, sans-serif' },
+                { value: 'Helvetica', label: 'Helvetica', fontFamily: 'Helvetica, sans-serif' },
+                { value: 'Courier New', label: 'Courier New', fontFamily: '"Courier New", monospace' },
+                { value: 'Trebuchet MS', label: 'Trebuchet MS', fontFamily: '"Trebuchet MS", sans-serif' },
+                { value: 'Comic Sans MS', label: 'Comic Sans MS', fontFamily: '"Comic Sans MS", cursive' }
+              ]}
+              onChange={(font) => onSettingChange('notificationFont', font)}
+            />
+            <SettingItem
+              icon="🌈"
+              title="Notification Text Color"
+              description="Choose the text color for popup notifications"
+              type="color"
+              value={settings.notificationTextColor || '#ffffff'}
+              onChange={(color) => onSettingChange('notificationTextColor', color)}
+            />
           </SettingSection>
 
           <SettingSection title="Desktop Avatar">

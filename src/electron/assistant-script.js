@@ -5,6 +5,9 @@ const { ipcRenderer } = require('electron');
 
 let isDelivering = false;
 let bubbleSide = 'left';
+let notificationColor = '#7f7f7c';
+let notificationFont = 'system';
+let notificationTextColor = '#ffffff';
 
 // Simple IPC handlers
 ipcRenderer.on('set-initial-avatar', (event, data) => {
@@ -17,8 +20,8 @@ ipcRenderer.on('set-initial-avatar', (event, data) => {
 ipcRenderer.on('clippy-speak', (event, message) => {
   if (bubble) {
     bubble.style.position = 'absolute';
-    bubble.style.background = '#7f7f7c';
-    bubble.style.color = 'white';
+    bubble.style.background = notificationColor;
+    bubble.style.color = notificationTextColor;
     bubble.style.padding = '12px 16px';
     bubble.style.borderRadius = '20px';
     bubble.style.top = '50%';
@@ -28,6 +31,13 @@ ipcRenderer.on('clippy-speak', (event, message) => {
     bubble.style.display = 'block';
     bubble.style.maxWidth = '250px';
     bubble.style.fontSize = '14px';
+    
+    // Apply custom font
+    if (notificationFont === 'system') {
+      bubble.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    } else {
+      bubble.style.fontFamily = notificationFont;
+    }
     
     // Position bubble based on bubbleSide setting
     if (bubbleSide === 'right') {
@@ -149,5 +159,20 @@ ipcRenderer.on('clippy-set-bubble-side', (event, side) => {
       bubble.style.left = 'auto';
     }
   }
+});
+
+ipcRenderer.on('clippy-set-notification-color', (event, color) => {
+  notificationColor = color;
+  console.log('Notification color changed to:', color);
+});
+
+ipcRenderer.on('clippy-set-notification-font', (event, font) => {
+  notificationFont = font;
+  console.log('Notification font changed to:', font);
+});
+
+ipcRenderer.on('clippy-set-notification-text-color', (event, color) => {
+  notificationTextColor = color;
+  console.log('Notification text color changed to:', color);
 });
 
