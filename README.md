@@ -9,7 +9,7 @@ A desktop reminder application with an animated assistant companion. Tasky helps
 ### Core Functionality
 - **Recurring Reminders**: Set up reminders for specific days of the week and times
 - **System Tray Integration**: Runs quietly in your system tray
-- **Cross-Platform**: Works on Windows, macOS, and Linux
+- **Platform**: Works on Windows
 - **Notification Sounds**: Customizable audio alerts for reminders
 - **Auto-Start**: Optional automatic startup with your system
 
