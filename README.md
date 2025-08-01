@@ -22,8 +22,8 @@ A desktop reminder application with an animated assistant companion. Tasky helps
 
 ### Customization
 - **Multiple Themes**: Light and dark mode support
-- **Notification Appearance**: Customize notification colors, fonts, and text colors
-- **Flexible Settings**: Configure notifications, sounds, and assistant behavior
+- **Notification Appearance**: Customize notification colours, fonts, and text colours
+- **Flexible Settings**: Configure notifications, sounds, and assistant behaviour
 - **Bubble Positioning**: Choose left or right side speech bubbles
 - **Animation Controls**: Enable or disable assistant animations
 - **Font Selection**: Choose from 9 different fonts for notifications with live preview
@@ -74,14 +74,14 @@ npm run dist
 ### Customizing Your Assistant
 1. Go to the "Assistant" tab in settings
 2. Choose from built-in avatars: Clippy, Merlin, Rover, Genie, Rocky, Bonzi, Peedy, Links
-3. Or upload your own custom avatar image
+3. Or upload your custom avatar image
 4. Adjust positioning, animation, and speech bubble settings
 5. Toggle dragging mode to move your assistant around the desktop
 
 ### Customizing Notifications
 1. Go to the "Settings" tab
 2. Under "Notifications & Alerts":
-   - **Notification Color**: Choose background color for popup bubbles
+   - **Notification Colour**: Choose background colour for popup bubbles
    - **Notification Font**: Select from 9 fonts with live preview
    - **Notification Text Color**: Set text color for optimal readability
 3. Test your changes with the "Test Notification" button
@@ -161,13 +161,11 @@ npm run pack         # Package without creating installer
 The application uses `electron-builder` for creating distributable packages:
 
 ```bash
-# Build and package for current platform
+# Build and package for the current platform
 npm run dist
 
 # The output will be in the dist/ directory:
 # - Windows: .exe installer and unpacked folder
-# - macOS: .dmg and .app bundle
-# - Linux: .AppImage and .deb packages
 ```
 
 ---
