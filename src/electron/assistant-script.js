@@ -86,6 +86,12 @@ ipcRenderer.on('clippy-set-custom-avatar', (event, filePath) => {
         img.style.height = '80px';
         img.style.objectFit = 'cover';
         img.style.display = 'block';
+        img.style.webkitUserSelect = 'none';
+        img.style.mozUserSelect = 'none';
+        img.style.msUserSelect = 'none';
+        img.style.userSelect = 'none';
+        img.style.webkitAppRegion = 'drag';
+        img.draggable = false;
         character.appendChild(img);
       }
     }).catch(error => {
@@ -104,12 +110,14 @@ ipcRenderer.on('set-dragging-mode', (event, enabled) => {
       container.style.cursor = 'move';
       character.style.webkitAppRegion = 'drag';
       character.style.cursor = 'move';
+      character.style.opacity = '1';
     } else {
-      // Disable dragging but keep clickable
+      // Disable dragging but keep clickable and visible
       container.style.webkitAppRegion = 'no-drag';
       container.style.cursor = 'pointer';
       character.style.webkitAppRegion = 'no-drag';
       character.style.cursor = 'pointer';
+      character.style.opacity = '1'; // Ensure it stays fully visible
     }
   }
 });

@@ -114,6 +114,10 @@ class ClippyAssistant {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       overflow: hidden;
       -webkit-app-region: no-drag;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
     }
     
     #clippy-container {
@@ -136,6 +140,12 @@ class ClippyAssistant {
       cursor: move;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
       -webkit-app-region: drag;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      opacity: 1;
+      transition: opacity 0.2s ease;
     }
     
     @keyframes bounce {
@@ -165,6 +175,18 @@ class ClippyAssistant {
       white-space: pre-wrap;
       line-height: 1.4;
       -webkit-app-region: no-drag;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    
+    #clippy-character img {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-app-region: drag;
     }
   </style>
 </head>

@@ -4,7 +4,6 @@ node_modules/
 # Build outputs
 .vite/
 dist/
-src/renderer/dist/
 
 # IDE and editor files
 .vscode/

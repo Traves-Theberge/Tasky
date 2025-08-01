@@ -11,7 +11,7 @@ export const SettingItem = ({
   options = [] 
 }) => {
   return (
-    <div className="flex items-center justify-between py-4 px-2 rounded-lg hover:bg-muted/30 transition-colors duration-200 min-h-[72px]">
+    <div className="flex items-center justify-between py-3 px-1 rounded-lg hover:bg-muted/30 transition-colors duration-200 min-h-[64px]">
       <div className="flex items-center space-y-0 gap-4">
         <div className="flex items-center justify-center w-10 h-10 flex-shrink-0">
           <span className="text-lg">{icon}</span>
