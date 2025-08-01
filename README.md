@@ -34,8 +34,6 @@ An electron desktop application with an animated assistant companion. Tasky help
 1. Visit the [Releases](https://github.com/your-repo/tasky/releases) page
 2. Download the latest version for your operating system:
    - Windows: `Tasky-Setup-1.0.0.exe`
-   - macOS: `Tasky-1.0.0.dmg`
-   - Linux: `Tasky-1.0.0.AppImage`
 
 ### Build from Source
 ```bash
