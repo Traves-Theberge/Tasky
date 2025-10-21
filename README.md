@@ -4,6 +4,9 @@ Tasky Your Desktop Reminder Companion
 
 An electron desktop application with an animated assistant companion. Tasky helps you stay organized with customizable recurring reminders, notification sounds, and a friendly desktop companion that delivers your reminders with personality.
 
+<img width="7096" height="2464" alt="diagram" src="https://github.com/user-attachments/assets/0c097b7f-e167-42ad-b584-87192050ec1a" />
+
+
 ## Features ✨
 
 ### Core Functionality
